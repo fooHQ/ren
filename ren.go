@@ -2,9 +2,11 @@ package ren
 
 import (
 	"archive/zip"
+	"bytes"
 	"context"
 	"errors"
 	"io"
+	"os"
 
 	"github.com/risor-io/risor"
 	"github.com/risor-io/risor/compiler"
@@ -24,6 +26,26 @@ main()
 var fileExtensions = []string{
 	".risor",
 	".rsr",
+}
+
+func RunBytes(ctx context.Context, b []byte, opts ...Option) error {
+	reader := bytes.NewReader(b)
+	return Run(ctx, reader, reader.Size(), opts...)
+}
+
+func RunFile(ctx context.Context, filename string, opts ...Option) error {
+	f, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	inf, err := f.Stat()
+	if err != nil {
+		return err
+	}
+
+	return Run(ctx, f, inf.Size(), opts...)
 }
 
 func Run(ctx context.Context, reader io.ReaderAt, size int64, opt ...Option) error {
