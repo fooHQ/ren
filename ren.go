@@ -1,9 +1,10 @@
 package ren
 
 import (
+	"archive/zip"
 	"context"
 	"errors"
-	"io/fs"
+	"io"
 
 	"github.com/risor-io/risor"
 	"github.com/risor-io/risor/compiler"
@@ -25,7 +26,7 @@ var fileExtensions = []string{
 	".rsr",
 }
 
-func Run(ctx context.Context, source fs.FS, opt ...Option) error {
+func Run(ctx context.Context, reader io.ReaderAt, size int64, opt ...Option) error {
 	var opts Options
 	for _, o := range opt {
 		o(&opts)
@@ -43,9 +44,14 @@ func Run(ctx context.Context, source fs.FS, opt ...Option) error {
 		return err
 	}
 
+	zr, err := zip.NewReader(reader, size)
+	if err != nil {
+		return err
+	}
+
 	imp := importer.NewFSImporter(importer.FSImporterOptions{
 		GlobalNames: conf.GlobalNames(),
-		SourceFS:    source,
+		SourceFS:    zr,
 		Extensions:  fileExtensions,
 	})
 
