@@ -7,8 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/otiai10/copy"
 )
 
 var (
@@ -37,50 +35,94 @@ func Build(src, dst string) error {
 		return err
 	}
 
-	tmpDir, err := os.MkdirTemp(".", "fzz*")
-	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(tmpDir)
-
-	err = copy.Copy(src, tmpDir)
-	if err != nil {
-		return err
-	}
-
-	f, err := os.CreateTemp(".", "fzz*."+fileExt)
+	tmpDir, err := copyToTempDir(src)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		_ = f.Close()
-		_ = os.Remove(f.Name())
+		_ = os.RemoveAll(tmpDir)
 	}()
 
-	zw := zip.NewWriter(f)
-	defer zw.Close()
-
-	err = zw.AddFS(os.DirFS(tmpDir))
+	tmpZip, err := createTempZip(tmpDir)
 	if err != nil {
 		return err
 	}
 
-	err = zw.Close()
-	if err != nil {
-		return err
-	}
-
-	err = f.Close()
-	if err != nil {
-		return err
-	}
-
-	err = os.Rename(f.Name(), dst)
+	err = os.Rename(tmpZip, dst)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func copyToTempDir(src string) (string, error) {
+	tmpDir, err := os.MkdirTemp(".", "ren*")
+	if err != nil {
+		return "", err
+	}
+
+	srcPrefix := ""
+	err = filepath.Walk(src, func(srcPth string, info os.FileInfo, err error) error {
+		if srcPrefix == "" {
+			srcPrefix = srcPth
+		}
+
+		if info.IsDir() {
+			// Skip a directory...
+			return nil
+		}
+
+		dstPth := filepath.Join(tmpDir, strings.TrimPrefix(srcPth, srcPrefix))
+
+		err = os.MkdirAll(filepath.Dir(dstPth), 0755)
+		if err != nil {
+			return err
+		}
+
+		fileSrc, err := os.Open(srcPth)
+		if err != nil {
+			return err
+		}
+		defer fileSrc.Close()
+
+		fileDst, err := os.Create(dstPth)
+		if err != nil {
+			return err
+		}
+		defer fileDst.Close()
+
+		_, err = io.Copy(fileDst, fileSrc)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return tmpDir, err
+}
+
+func createTempZip(src string) (string, error) {
+	f, err := os.CreateTemp(".", "ren*."+fileExt)
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		_ = f.Close()
+	}()
+
+	zw := zip.NewWriter(f)
+	defer func() {
+		_ = zw.Close()
+	}()
+
+	err = zw.AddFS(os.DirFS(src))
+	if err != nil {
+		return "", err
+	}
+
+	return f.Name(), nil
 }
 
 func isEmpty(dir string) error {
