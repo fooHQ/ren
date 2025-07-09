@@ -47,6 +47,9 @@ func Build(src, dst string) error {
 	if err != nil {
 		return err
 	}
+	defer func() {
+		_ = os.Remove(tmpZip)
+	}()
 
 	err = os.Rename(tmpZip, dst)
 	if err != nil {
