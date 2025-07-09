@@ -32,7 +32,7 @@ func TestOS_Create(t *testing.T) {
 		"test": testutils.NewFS(testCh),
 	}
 	o := engineos.New(
-		engineos.WithWorkDir("/foojank"),
+		engineos.WithWorkDir("/ren"),
 		engineos.WithFilesystems(fss),
 	)
 
@@ -103,7 +103,7 @@ func TestOS_Create(t *testing.T) {
 		{
 			input: "./data/form.txt",
 			result: testutils.CreateResult{
-				Name: "/foojank/data/form.txt",
+				Name: "/ren/data/form.txt",
 			},
 		},
 	}
@@ -124,7 +124,7 @@ func TestOS_Mkdir(t *testing.T) {
 		"test": testutils.NewFS(resultCh),
 	}
 	o := engineos.New(
-		engineos.WithWorkDir("/foojank"),
+		engineos.WithWorkDir("/ren"),
 		engineos.WithFilesystems(fss),
 	)
 
@@ -205,7 +205,7 @@ func TestOS_Mkdir(t *testing.T) {
 		{
 			input: "./data/form.txt",
 			result: testutils.MkdirResult{
-				Name: "/foojank/data/form.txt",
+				Name: "/ren/data/form.txt",
 				Perm: 0777,
 			},
 		},
@@ -227,7 +227,7 @@ func TestOS_MkdirAll(t *testing.T) {
 		"test": testutils.NewFS(resultCh),
 	}
 	o := engineos.New(
-		engineos.WithWorkDir("/foojank"),
+		engineos.WithWorkDir("/ren"),
 		engineos.WithFilesystems(fss),
 	)
 
@@ -308,7 +308,7 @@ func TestOS_MkdirAll(t *testing.T) {
 		{
 			input: "./data/form.txt",
 			result: testutils.MkdirAllResult{
-				Path: "/foojank/data/form.txt",
+				Path: "/ren/data/form.txt",
 				Perm: 0777,
 			},
 		},
@@ -330,7 +330,7 @@ func TestOS_Open(t *testing.T) {
 		"test": testutils.NewFS(resultCh),
 	}
 	o := engineos.New(
-		engineos.WithWorkDir("/foojank"),
+		engineos.WithWorkDir("/ren"),
 		engineos.WithFilesystems(fss),
 	)
 
@@ -401,7 +401,7 @@ func TestOS_Open(t *testing.T) {
 		{
 			input: "./data/form.txt",
 			result: testutils.OpenResult{
-				Name: "/foojank/data/form.txt",
+				Name: "/ren/data/form.txt",
 			},
 		},
 	}
@@ -422,7 +422,7 @@ func TestOS_OpenFile(t *testing.T) {
 		"test": testutils.NewFS(resultCh),
 	}
 	o := engineos.New(
-		engineos.WithWorkDir("/foojank"),
+		engineos.WithWorkDir("/ren"),
 		engineos.WithFilesystems(fss),
 	)
 
@@ -513,7 +513,7 @@ func TestOS_OpenFile(t *testing.T) {
 		{
 			input: "./data/form.txt",
 			result: testutils.OpenFileResult{
-				Name: "/foojank/data/form.txt",
+				Name: "/ren/data/form.txt",
 				Flag: 1313,
 				Perm: 0777,
 			},
@@ -536,7 +536,7 @@ func TestOS_ReadFile(t *testing.T) {
 		"test": testutils.NewFS(resultCh),
 	}
 	o := engineos.New(
-		engineos.WithWorkDir("/foojank"),
+		engineos.WithWorkDir("/ren"),
 		engineos.WithFilesystems(fss),
 	)
 
@@ -607,7 +607,7 @@ func TestOS_ReadFile(t *testing.T) {
 		{
 			input: "./data/form.txt",
 			result: testutils.ReadFileResult{
-				Name: "/foojank/data/form.txt",
+				Name: "/ren/data/form.txt",
 			},
 		},
 	}
@@ -628,7 +628,7 @@ func TestOS_Remove(t *testing.T) {
 		"test": testutils.NewFS(resultCh),
 	}
 	o := engineos.New(
-		engineos.WithWorkDir("/foojank"),
+		engineos.WithWorkDir("/ren"),
 		engineos.WithFilesystems(fss),
 	)
 
@@ -699,7 +699,7 @@ func TestOS_Remove(t *testing.T) {
 		{
 			input: "./data/form.txt",
 			result: testutils.RemoveResult{
-				Name: "/foojank/data/form.txt",
+				Name: "/ren/data/form.txt",
 			},
 		},
 	}
@@ -720,7 +720,7 @@ func TestOS_RemoveAll(t *testing.T) {
 		"test": testutils.NewFS(resultCh),
 	}
 	o := engineos.New(
-		engineos.WithWorkDir("/foojank"),
+		engineos.WithWorkDir("/ren"),
 		engineos.WithFilesystems(fss),
 	)
 
@@ -791,7 +791,7 @@ func TestOS_RemoveAll(t *testing.T) {
 		{
 			input: "./data/form.txt",
 			result: testutils.RemoveAllResult{
-				Path: "/foojank/data/form.txt",
+				Path: "/ren/data/form.txt",
 			},
 		},
 	}
@@ -812,7 +812,7 @@ func TestOS_Rename(t *testing.T) {
 		"test": testutils.NewFS(resultCh),
 	}
 	o := engineos.New(
-		engineos.WithWorkDir("/foojank"),
+		engineos.WithWorkDir("/ren"),
 		engineos.WithFilesystems(fss),
 	)
 
@@ -849,8 +849,8 @@ func TestOS_Rename(t *testing.T) {
 			src: "./private/foo.txt",
 			dst: "bar.txt",
 			result: testutils.RenameResult{
-				OldPath: "/foojank/private/foo.txt",
-				NewPath: "/foojank/bar.txt",
+				OldPath: "/ren/private/foo.txt",
+				NewPath: "/ren/bar.txt",
 			},
 		},
 		{
@@ -858,7 +858,7 @@ func TestOS_Rename(t *testing.T) {
 			dst: "./bar.txt",
 			result: testutils.RenameResult{
 				OldPath: "/foo.txt",
-				NewPath: "/foojank/bar.txt",
+				NewPath: "/ren/bar.txt",
 			},
 		},
 	}
@@ -878,7 +878,7 @@ func TestOS_Rename_ErrCrossingFSBoundaries(t *testing.T) {
 		"test": testutils.NewFS(nil),
 	}
 	o := engineos.New(
-		engineos.WithWorkDir("/foojank"),
+		engineos.WithWorkDir("/ren"),
 		engineos.WithFilesystems(fss),
 	)
 
@@ -909,7 +909,7 @@ func TestOS_Stat(t *testing.T) {
 		"test": testutils.NewFS(resultCh),
 	}
 	o := engineos.New(
-		engineos.WithWorkDir("/foojank"),
+		engineos.WithWorkDir("/ren"),
 		engineos.WithFilesystems(fss),
 	)
 
@@ -980,7 +980,7 @@ func TestOS_Stat(t *testing.T) {
 		{
 			input: "./data/form.txt",
 			result: testutils.StatResult{
-				Name: "/foojank/data/form.txt",
+				Name: "/ren/data/form.txt",
 			},
 		},
 	}
@@ -1001,7 +1001,7 @@ func TestOS_Symlink(t *testing.T) {
 		"test": testutils.NewFS(resultCh),
 	}
 	o := engineos.New(
-		engineos.WithWorkDir("/foojank"),
+		engineos.WithWorkDir("/ren"),
 		engineos.WithFilesystems(fss),
 	)
 
@@ -1038,8 +1038,8 @@ func TestOS_Symlink(t *testing.T) {
 			src: "./private/foo.txt",
 			dst: "bar.txt",
 			result: testutils.SymlinkResult{
-				OldName: "/foojank/private/foo.txt",
-				NewName: "/foojank/bar.txt",
+				OldName: "/ren/private/foo.txt",
+				NewName: "/ren/bar.txt",
 			},
 		},
 		{
@@ -1047,7 +1047,7 @@ func TestOS_Symlink(t *testing.T) {
 			dst: "./bar.txt",
 			result: testutils.SymlinkResult{
 				OldName: "/foo.txt",
-				NewName: "/foojank/bar.txt",
+				NewName: "/ren/bar.txt",
 			},
 		},
 	}
@@ -1067,7 +1067,7 @@ func TestOS_Symlink_ErrCrossingFSBoundaries(t *testing.T) {
 		"test": testutils.NewFS(nil),
 	}
 	o := engineos.New(
-		engineos.WithWorkDir("/foojank"),
+		engineos.WithWorkDir("/ren"),
 		engineos.WithFilesystems(fss),
 	)
 
@@ -1098,7 +1098,7 @@ func TestOS_WriteFile(t *testing.T) {
 		"test": testutils.NewFS(resultCh),
 	}
 	o := engineos.New(
-		engineos.WithWorkDir("/foojank"),
+		engineos.WithWorkDir("/ren"),
 		engineos.WithFilesystems(fss),
 	)
 
@@ -1189,7 +1189,7 @@ func TestOS_WriteFile(t *testing.T) {
 		{
 			input: "./data/form.txt",
 			result: testutils.WriteFileResult{
-				Name: "/foojank/data/form.txt",
+				Name: "/ren/data/form.txt",
 				Data: []byte("test"),
 				Perm: 0777,
 			},
@@ -1212,7 +1212,7 @@ func TestOS_ReadDir(t *testing.T) {
 		"test": testutils.NewFS(resultCh),
 	}
 	o := engineos.New(
-		engineos.WithWorkDir("/foojank"),
+		engineos.WithWorkDir("/ren"),
 		engineos.WithFilesystems(fss),
 	)
 
@@ -1283,7 +1283,7 @@ func TestOS_ReadDir(t *testing.T) {
 		{
 			input: "./data/form.txt",
 			result: testutils.ReadDirResult{
-				Name: "/foojank/data/form.txt",
+				Name: "/ren/data/form.txt",
 			},
 		},
 	}
@@ -1304,7 +1304,7 @@ func TestOS_WalkDir(t *testing.T) {
 		"test": testutils.NewFS(resultCh),
 	}
 	o := engineos.New(
-		engineos.WithWorkDir("/foojank"),
+		engineos.WithWorkDir("/ren"),
 		engineos.WithFilesystems(fss),
 	)
 
@@ -1379,7 +1379,7 @@ func TestOS_WalkDir(t *testing.T) {
 		{
 			input: "./data/form.txt",
 			result: testutils.WalkDirResult{
-				Root: "/foojank/data/form.txt",
+				Root: "/ren/data/form.txt",
 			},
 		},
 	}
