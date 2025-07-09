@@ -64,7 +64,7 @@ func WithExitHandler(handler ExitHandler) Option {
 
 type OS struct {
 	wd          string
-	fs          *FS
+	fs          *fsMiddleware
 	environ     map[string]string
 	stdin       risoros.File
 	stdout      risoros.File
@@ -336,7 +336,7 @@ func (o *OS) LookupGid(gid string) (risoros.Group, error) {
 func New(opts ...Option) *OS {
 	o := &OS{
 		wd:      initWD(),
-		fs:      NewFS(),
+		fs:      newFSMiddleware(),
 		environ: initEnviron(),
 	}
 	for _, opt := range opts {

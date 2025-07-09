@@ -13,19 +13,19 @@ var (
 	ErrCrossingFSBoundaries = errors.New("crossing filesystem boundaries")
 )
 
-var _ risoros.FS = &FS{}
+var _ risoros.FS = &fsMiddleware{}
 
-type FS struct {
+type fsMiddleware struct {
 	registry map[string]risoros.FS
 }
 
-func NewFS() *FS {
-	return &FS{
+func newFSMiddleware() *fsMiddleware {
+	return &fsMiddleware{
 		registry: make(map[string]risoros.FS),
 	}
 }
 
-func (f *FS) Create(name string) (risoros.File, error) {
+func (f *fsMiddleware) Create(name string) (risoros.File, error) {
 	fs, err := f.lookupFS(name)
 	if err != nil {
 		return nil, err
@@ -41,7 +41,7 @@ func (f *FS) Create(name string) (risoros.File, error) {
 	return file, nil
 }
 
-func (f *FS) Mkdir(name string, perm risoros.FileMode) error {
+func (f *fsMiddleware) Mkdir(name string, perm risoros.FileMode) error {
 	fs, err := f.lookupFS(name)
 	if err != nil {
 		return err
@@ -57,7 +57,7 @@ func (f *FS) Mkdir(name string, perm risoros.FileMode) error {
 	return nil
 }
 
-func (f *FS) MkdirAll(path string, perm risoros.FileMode) error {
+func (f *fsMiddleware) MkdirAll(path string, perm risoros.FileMode) error {
 	fs, err := f.lookupFS(path)
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func (f *FS) MkdirAll(path string, perm risoros.FileMode) error {
 	return nil
 }
 
-func (f *FS) Open(name string) (risoros.File, error) {
+func (f *fsMiddleware) Open(name string) (risoros.File, error) {
 	fs, err := f.lookupFS(name)
 	if err != nil {
 		return nil, err
@@ -89,7 +89,7 @@ func (f *FS) Open(name string) (risoros.File, error) {
 	return file, nil
 }
 
-func (f *FS) OpenFile(name string, flag int, perm risoros.FileMode) (risoros.File, error) {
+func (f *fsMiddleware) OpenFile(name string, flag int, perm risoros.FileMode) (risoros.File, error) {
 	fs, err := f.lookupFS(name)
 	if err != nil {
 		return nil, err
@@ -105,7 +105,7 @@ func (f *FS) OpenFile(name string, flag int, perm risoros.FileMode) (risoros.Fil
 	return file, nil
 }
 
-func (f *FS) ReadFile(name string) ([]byte, error) {
+func (f *fsMiddleware) ReadFile(name string) ([]byte, error) {
 	fs, err := f.lookupFS(name)
 	if err != nil {
 		return nil, err
@@ -121,7 +121,7 @@ func (f *FS) ReadFile(name string) ([]byte, error) {
 	return b, nil
 }
 
-func (f *FS) Remove(name string) error {
+func (f *fsMiddleware) Remove(name string) error {
 	fs, err := f.lookupFS(name)
 	if err != nil {
 		return err
@@ -137,7 +137,7 @@ func (f *FS) Remove(name string) error {
 	return nil
 }
 
-func (f *FS) RemoveAll(path string) error {
+func (f *fsMiddleware) RemoveAll(path string) error {
 	fs, err := f.lookupFS(path)
 	if err != nil {
 		return err
@@ -153,7 +153,7 @@ func (f *FS) RemoveAll(path string) error {
 	return nil
 }
 
-func (f *FS) Rename(oldPath, newPath string) error {
+func (f *fsMiddleware) Rename(oldPath, newPath string) error {
 	oldFS, err := f.lookupFS(oldPath)
 	if err != nil {
 		return err
@@ -180,7 +180,7 @@ func (f *FS) Rename(oldPath, newPath string) error {
 	return nil
 }
 
-func (f *FS) Stat(name string) (risoros.FileInfo, error) {
+func (f *fsMiddleware) Stat(name string) (risoros.FileInfo, error) {
 	fs, err := f.lookupFS(name)
 	if err != nil {
 		return nil, err
@@ -196,7 +196,7 @@ func (f *FS) Stat(name string) (risoros.FileInfo, error) {
 	return info, nil
 }
 
-func (f *FS) Symlink(oldName, newName string) error {
+func (f *fsMiddleware) Symlink(oldName, newName string) error {
 	oldFS, err := f.lookupFS(oldName)
 	if err != nil {
 		return err
@@ -223,7 +223,7 @@ func (f *FS) Symlink(oldName, newName string) error {
 	return nil
 }
 
-func (f *FS) WriteFile(name string, data []byte, perm risoros.FileMode) error {
+func (f *fsMiddleware) WriteFile(name string, data []byte, perm risoros.FileMode) error {
 	fs, err := f.lookupFS(name)
 	if err != nil {
 		return err
@@ -239,7 +239,7 @@ func (f *FS) WriteFile(name string, data []byte, perm risoros.FileMode) error {
 	return nil
 }
 
-func (f *FS) ReadDir(name string) ([]risoros.DirEntry, error) {
+func (f *fsMiddleware) ReadDir(name string) ([]risoros.DirEntry, error) {
 	fs, err := f.lookupFS(name)
 	if err != nil {
 		return nil, err
@@ -265,7 +265,7 @@ func (f *FS) ReadDir(name string) ([]risoros.DirEntry, error) {
 	return entries, nil
 }
 
-func (f *FS) WalkDir(root string, fn risoros.WalkDirFunc) error {
+func (f *fsMiddleware) WalkDir(root string, fn risoros.WalkDirFunc) error {
 	fs, err := f.lookupFS(root)
 	if err != nil {
 		return err
@@ -277,7 +277,7 @@ func (f *FS) WalkDir(root string, fn risoros.WalkDirFunc) error {
 	return fs.WalkDir(pth, fn)
 }
 
-func (f *FS) lookupFS(pth string) (risoros.FS, error) {
+func (f *fsMiddleware) lookupFS(pth string) (risoros.FS, error) {
 	scheme, err := urlpath.Scheme(pth)
 	if err != nil {
 		return nil, err
