@@ -17,7 +17,7 @@ var (
 	ErrMissingMain = errors.New("main file is missing")
 )
 
-const fileExt = "fzz"
+const fileExt = "zip"
 
 func NewFilename(name string) string {
 	if strings.HasSuffix(name, fileExt) {
