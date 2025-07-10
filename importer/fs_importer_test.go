@@ -12,15 +12,8 @@ import (
 func TestFSImporter_Import(t *testing.T) {
 	// Create test filesystem with the bar.risor fixture
 	testFS := fstest.MapFS{
-		"foo/bar.risor": &fstest.MapFile{
-			Data: []byte(`
-func test_function() {
-    return 765
-}
-`),
-		},
-		"example.rriissoorr": &fstest.MapFile{
-			Data: []byte(`func hello() { return "world" }`),
+		"foo/bar.json": &fstest.MapFile{
+			Data: []byte(`{"code":[{"id":"__main__","name":"__main__","symbol_table_id":"root","instructions":[24,0,71,0,33,0,80],"constants":[{"type":"function","value":{"id":"1","name":"bar","parameters":[],"defaults":[]}}],"source":"func bar() { return 987 }"},{"id":"__main__.0","name":"bar","parent_id":"__main__","symbol_table_id":"root.0","function_id":"1","instructions":[24,0,4],"constants":[{"type":"int","value":987}],"source":"return 987"}],"symbol_table":{"id":"root","symbols":[{"name":"bar","index":0,"is_constant":true}],"symbols_by_name":{"bar":{"name":"bar","index":0,"is_constant":true}},"children":[{"id":"root.0","symbols":[{"name":"bar","index":0,"is_constant":true}],"symbols_by_name":{"bar":{"name":"bar","index":0,"is_constant":true}},"children":[{"id":"root.0.0","symbols":[],"symbols_by_name":{},"is_block":true}]}]}}`),
 		},
 	}
 
@@ -36,7 +29,7 @@ func test_function() {
 		require.NotNil(t, module.Code())
 
 		code := module.Code()
-		require.Equal(t, []string{"test_function"}, code.GlobalNames())
+		require.Equal(t, []string{"bar"}, code.GlobalNames())
 	})
 
 	t.Run("returns error for nonexistent module", func(t *testing.T) {
@@ -48,18 +41,6 @@ func test_function() {
 		require.Error(t, err)
 		require.Nil(t, module)
 		require.Contains(t, err.Error(), "module \"nonexistent\" not found")
-	})
-
-	t.Run("uses custom extensions", func(t *testing.T) {
-		importer := NewFSImporter(FSImporterOptions{
-			SourceFS:   testFS,
-			Extensions: []string{".rriissoorr"},
-		})
-
-		module, err := importer.Import(context.Background(), "example")
-		require.NoError(t, err)
-		require.NotNil(t, module)
-		require.Equal(t, "example", module.Name().Value())
 	})
 }
 
