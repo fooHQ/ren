@@ -17,17 +17,6 @@ import (
 	"github.com/foohq/ren/importer"
 )
 
-const entrypoint = `
-from main import main
-
-main()
-`
-
-var fileExtensions = []string{
-	".risor",
-	".rsr",
-}
-
 func RunBytes(ctx context.Context, b []byte, opts ...Option) error {
 	reader := bytes.NewReader(b)
 	return Run(ctx, reader, reader.Size(), opts...)
@@ -53,20 +42,19 @@ func Run(ctx context.Context, reader io.ReaderAt, size int64, opt ...Option) err
 	for _, o := range opt {
 		o(&opts)
 	}
-
 	conf := opts.toConfig()
 
-	prog, err := parser.Parse(ctx, entrypoint)
-	if err != nil {
-		return err
-	}
-
-	code, err := compiler.Compile(prog)
-	if err != nil {
-		return err
-	}
-
 	zr, err := zip.NewReader(reader, size)
+	if err != nil {
+		return err
+	}
+
+	b, err := readEntrypoint(zr)
+	if err != nil {
+		return err
+	}
+
+	code, err := compiler.UnmarshalCode(b)
 	if err != nil {
 		return err
 	}
@@ -74,7 +62,6 @@ func Run(ctx context.Context, reader io.ReaderAt, size int64, opt ...Option) err
 	imp := importer.NewFSImporter(importer.FSImporterOptions{
 		GlobalNames: conf.GlobalNames(),
 		SourceFS:    zr,
-		Extensions:  fileExtensions,
 	})
 
 	vmOpts := conf.VMOpts()
@@ -87,6 +74,21 @@ func Run(ctx context.Context, reader io.ReaderAt, size int64, opt ...Option) err
 	return nil
 }
 
+func readEntrypoint(zr *zip.Reader) ([]byte, error) {
+	f, err := zr.Open("main.json")
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	b, err := io.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
 type Options struct {
 	os      risoros.OS
 	globals map[string]any
@@ -94,7 +96,7 @@ type Options struct {
 
 func (o *Options) Validate() error {
 	if o.os == nil {
-		return errors.New("engine: OS not specified")
+		return errors.New("ren: OS not specified")
 	}
 
 	return nil
