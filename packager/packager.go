@@ -2,11 +2,17 @@ package packager
 
 import (
 	"archive/zip"
+	"context"
 	"errors"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/risor-io/risor/compiler"
+	"github.com/risor-io/risor/parser"
+
+	"github.com/foohq/ren/modules"
 )
 
 var (
@@ -76,32 +82,64 @@ func copyToTempDir(src string) (string, error) {
 			return nil
 		}
 
-		dstPth := filepath.Join(tmpDir, strings.TrimPrefix(srcPth, srcPrefix))
+		dstPth := filepath.Join(tmpDir, strings.TrimPrefix(filepath.ToSlash(srcPth), filepath.ToSlash(srcPrefix)))
 
 		err = os.MkdirAll(filepath.Dir(dstPth), 0755)
 		if err != nil {
 			return err
 		}
 
-		fileSrc, err := os.Open(srcPth)
-		if err != nil {
-			return err
-		}
-		defer fileSrc.Close()
+		if isRisorScript(srcPth) {
+			b, err := os.ReadFile(srcPth)
+			if err != nil {
+				return err
+			}
 
-		fileDst, err := os.Create(dstPth)
-		if err != nil {
-			return err
-		}
-		defer fileDst.Close()
+			prog, err := parser.Parse(context.Background(), string(b))
+			if err != nil {
+				return err
+			}
 
-		_, err = io.Copy(fileDst, fileSrc)
-		if err != nil {
+			code, err := compiler.Compile(
+				prog,
+				compiler.WithFilename(dstPth),
+				compiler.WithGlobalNames(modules.GlobalNames()),
+			)
+			if err != nil {
+				return err
+			}
+
+			b, err = code.MarshalJSON()
+			if err != nil {
+				return err
+			}
+
+			err = os.WriteFile(replaceScriptExt(dstPth), b, 0644)
+			if err != nil {
+				return err
+			}
+		} else {
+			fileSrc, err := os.Open(srcPth)
+			if err != nil {
+				return err
+			}
+			defer fileSrc.Close()
+
+			fileDst, err := os.Create(dstPth)
+			if err != nil {
+				return err
+			}
+			defer fileDst.Close()
+
+			_, err = io.Copy(fileDst, fileSrc)
 			return err
 		}
 
 		return nil
 	})
+	if err != nil {
+		_ = os.RemoveAll(tmpDir)
+	}
 
 	return tmpDir, err
 }
@@ -176,4 +214,19 @@ func isMain(dir string) error {
 	}
 
 	return ErrMissingMain
+}
+
+func isRisorScript(filename string) bool {
+	exts := []string{".risor", ".rsr"}
+	for _, ext := range exts {
+		if strings.HasSuffix(filename, ext) {
+			return true
+		}
+	}
+	return false
+}
+
+func replaceScriptExt(filename string) string {
+	name := strings.TrimSuffix(filename, filepath.Ext(filename))
+	return name + ".json"
 }

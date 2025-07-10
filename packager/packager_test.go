@@ -18,7 +18,7 @@ func TestBuild(t *testing.T) {
 
 	zr, err := zip.OpenReader(out)
 	require.NoError(t, err)
-	require.Equal(t, "main.risor", zr.File[0].Name)
+	require.Equal(t, "main.json", zr.File[0].Name)
 	zr.Close()
 }
 
