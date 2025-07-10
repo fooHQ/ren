@@ -92,6 +92,25 @@ func Globals() map[string]any {
 	return result
 }
 
+func GlobalNames() []string {
+	result := make([]string, len(modules)+len(builtins))
+	for _, module := range modules {
+		if module == nil {
+			continue
+		}
+		result = append(result, module.Name().String())
+	}
+	for _, builtin := range builtins {
+		if builtin == nil {
+			continue
+		}
+		for name := range builtin {
+			result = append(result, name)
+		}
+	}
+	return result
+}
+
 // StubBuildTag returns stub build tag for a module name. The function does not check existence of the module.
 func StubBuildTag(name string) string {
 	return "module_" + name + "_stub"
