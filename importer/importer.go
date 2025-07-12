@@ -10,9 +10,9 @@ import (
 	"github.com/risor-io/risor/object"
 )
 
-// FSImporterOptions configure an Importer that can read from a filesystem
+// ImporterOptions configure an Importer that can read from a filesystem
 // implementing the `fs.FS` interface.
-type FSImporterOptions struct {
+type ImporterOptions struct {
 	// Global names that should be available when the module is compiled.
 	GlobalNames []string
 
@@ -20,24 +20,24 @@ type FSImporterOptions struct {
 	SourceFS fs.FS
 }
 
-// FSImporter is an Importer that can read Risor code modules from a filesystem
+// Importer is an Importer that can read Risor code modules from a filesystem
 // implementing the `fs.FS` interface.
-type FSImporter struct {
+type Importer struct {
 	globalNames []string
 	sourceFS    fs.FS
 }
 
-// NewFSImporter returns an Importer that can read Risor code modules from a
+// NewImporter returns an Importer that can read Risor code modules from a
 // filesystem implementing the `fs.FS` interface.
-func NewFSImporter(opts FSImporterOptions) *FSImporter {
-	return &FSImporter{
+func NewImporter(opts ImporterOptions) *Importer {
+	return &Importer{
 		globalNames: opts.GlobalNames,
 		sourceFS:    opts.SourceFS,
 	}
 }
 
 // Import a module by name.
-func (i *FSImporter) Import(_ context.Context, name string) (*object.Module, error) {
+func (i *Importer) Import(_ context.Context, name string) (*object.Module, error) {
 	source, found := i.readFileWithExtension(name)
 	if !found {
 		return nil, fmt.Errorf("import error: module %q not found", name)
@@ -51,7 +51,7 @@ func (i *FSImporter) Import(_ context.Context, name string) (*object.Module, err
 	return object.NewModule(name, code), nil
 }
 
-func (i *FSImporter) readFileWithExtension(name string) ([]byte, bool) {
+func (i *Importer) readFileWithExtension(name string) ([]byte, bool) {
 	f, err := i.sourceFS.Open(name + ".json")
 	if err != nil {
 		return nil, false
