@@ -45,12 +45,12 @@ func TestImporter_Import(t *testing.T) {
 }
 
 func TestImporter_WithRealFixtures(t *testing.T) {
-	// Create Importer using the fixtures directory in the current directory
+	// Create Importer using the testdata directory in the current directory
 	importer := NewImporter(ImporterOptions{
-		SourceFS: os.DirFS("fixtures"),
+		SourceFS: os.DirFS("testdata"),
 	})
 
-	// Import the bar module from fixtures
+	// Import the bar module from testdata
 	module, err := importer.Import(context.Background(), "foo/bar")
 	require.NoError(t, err)
 	require.NotNil(t, module)
