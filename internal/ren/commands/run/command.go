@@ -9,7 +9,7 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/foohq/ren"
-	"github.com/foohq/ren/filesystems/file"
+	"github.com/foohq/ren/filesystems/local"
 	"github.com/foohq/ren/internal/ren/actions"
 	"github.com/foohq/ren/modules"
 	renos "github.com/foohq/ren/os"
@@ -33,7 +33,7 @@ func NewCommand() *cli.Command {
 }
 
 func action(ctx context.Context, c *cli.Command) error {
-	localFS, err := file.NewFS()
+	localFS, err := local.NewFS()
 	if err != nil {
 		err := fmt.Errorf("cannot initialize local filesystem: %w", err)
 		_, _ = fmt.Fprintln(os.Stderr, err)
