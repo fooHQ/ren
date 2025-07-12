@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFSImporter_Import(t *testing.T) {
+func TestImporter_Import(t *testing.T) {
 	// Create test filesystem with the bar.risor fixture
 	testFS := fstest.MapFS{
 		"foo/bar.json": &fstest.MapFile{
@@ -18,7 +18,7 @@ func TestFSImporter_Import(t *testing.T) {
 	}
 
 	t.Run("successfully imports existing module", func(t *testing.T) {
-		importer := NewFSImporter(FSImporterOptions{
+		importer := NewImporter(ImporterOptions{
 			SourceFS: testFS,
 		})
 
@@ -33,7 +33,7 @@ func TestFSImporter_Import(t *testing.T) {
 	})
 
 	t.Run("returns error for nonexistent module", func(t *testing.T) {
-		importer := NewFSImporter(FSImporterOptions{
+		importer := NewImporter(ImporterOptions{
 			SourceFS: testFS,
 		})
 
@@ -44,9 +44,9 @@ func TestFSImporter_Import(t *testing.T) {
 	})
 }
 
-func TestFSImporter_WithRealFixtures(t *testing.T) {
-	// Create FSImporter using the fixtures directory in the current directory
-	importer := NewFSImporter(FSImporterOptions{
+func TestImporter_WithRealFixtures(t *testing.T) {
+	// Create Importer using the fixtures directory in the current directory
+	importer := NewImporter(ImporterOptions{
 		SourceFS: os.DirFS("fixtures"),
 	})
 
