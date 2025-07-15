@@ -11,6 +11,7 @@ require (
 	github.com/risor-io/risor/modules/shlex v1.8.1
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v3 v3.3.8
+	golang.org/x/sys v0.34.0
 )
 
 require (
