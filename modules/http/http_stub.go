@@ -1,4 +1,4 @@
-//go:build module_http_stub
+//go:build !module_http
 
 package http
 

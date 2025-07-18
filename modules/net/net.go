@@ -1,4 +1,4 @@
-//go:build !module_net_stub
+//go:build module_net
 
 package net
 

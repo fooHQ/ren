@@ -1,4 +1,4 @@
-//go:build module_base64_stub
+//go:build !module_base64
 
 package base64
 
