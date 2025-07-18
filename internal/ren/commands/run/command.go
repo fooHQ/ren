@@ -57,7 +57,7 @@ func runAction(filesystems map[string]risoros.FS) cli.ActionFunc {
 		pkg := c.Args().First()
 		args := c.Args().Tail()
 
-		o := renos.New(
+		ros := renos.New(
 			renos.WithStdin(os.Stdin),
 			renos.WithStdout(os.Stdout),
 			renos.WithArgs(args),
@@ -67,8 +67,8 @@ func runAction(filesystems map[string]risoros.FS) cli.ActionFunc {
 		err := ren.RunFile(
 			ctx,
 			pkg,
+			ros,
 			ren.WithGlobals(modules.Globals()),
-			ren.WithOS(o),
 		)
 		if err != nil {
 			err := fmt.Errorf("run error: %w", err)
