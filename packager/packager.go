@@ -73,6 +73,10 @@ func copyToTempDir(src string) (string, error) {
 
 	srcPrefix := ""
 	err = filepath.Walk(src, func(srcPth string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
 		if srcPrefix == "" {
 			srcPrefix = srcPth
 		}
