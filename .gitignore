@@ -1,0 +1,4 @@
+/build/
+vendor/
+go.work
+go.work.sum
