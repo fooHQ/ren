@@ -1,4 +1,4 @@
-//go:build !module_filepath_stub
+//go:build module_filepath
 
 package filepath
 

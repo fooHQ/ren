@@ -1,4 +1,4 @@
-//go:build !module_urlpath_stub
+//go:build module_urlpath
 
 package urlpath
 

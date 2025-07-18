@@ -1,4 +1,4 @@
-//go:build !module_os_stub
+//go:build module_os
 
 package os
 

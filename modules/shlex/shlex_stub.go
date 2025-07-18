@@ -1,4 +1,4 @@
-//go:build module_shlex_stub
+//go:build !module_shlex
 
 package shlex
 

@@ -1,4 +1,4 @@
-//go:build !module_builtins_stub
+//go:build module_builtins
 
 package builtins
 

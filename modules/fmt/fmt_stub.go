@@ -1,4 +1,4 @@
-//go:build module_fmt_stub
+//go:build !module_fmt
 
 package fmt
 
