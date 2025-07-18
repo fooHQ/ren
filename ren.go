@@ -17,12 +17,12 @@ import (
 	"github.com/foohq/ren/importer"
 )
 
-func RunBytes(ctx context.Context, b []byte, opts ...Option) error {
+func RunBytes(ctx context.Context, b []byte, ros risoros.OS, opts ...Option) error {
 	reader := bytes.NewReader(b)
-	return Run(ctx, reader, reader.Size(), opts...)
+	return Run(ctx, reader, reader.Size(), ros, opts...)
 }
 
-func RunFile(ctx context.Context, filename string, opts ...Option) error {
+func RunFile(ctx context.Context, filename string, ros risoros.OS, opts ...Option) error {
 	f, err := os.Open(filename)
 	if err != nil {
 		return err
@@ -34,15 +34,15 @@ func RunFile(ctx context.Context, filename string, opts ...Option) error {
 		return err
 	}
 
-	return Run(ctx, f, inf.Size(), opts...)
+	return Run(ctx, f, inf.Size(), ros, opts...)
 }
 
-func Run(ctx context.Context, reader io.ReaderAt, size int64, opt ...Option) error {
-	var opts Options
-	for _, o := range opt {
-		o(&opts)
+func Run(ctx context.Context, reader io.ReaderAt, size int64, ros risoros.OS, opt ...Option) error {
+	opt = append(opt, withOS(ros))
+	conf, err := buildConfig(opt...)
+	if err != nil {
+		return err
 	}
-	conf := opts.toConfig()
 
 	zr, err := zip.NewReader(reader, size)
 	if err != nil {
@@ -72,6 +72,20 @@ func Run(ctx context.Context, reader io.ReaderAt, size int64, opt ...Option) err
 	}
 
 	return nil
+}
+
+func buildConfig(opt ...Option) (*risor.Config, error) {
+	var opts Options
+	for _, o := range opt {
+		o(&opts)
+	}
+
+	err := opts.Validate()
+	if err != nil {
+		return nil, err
+	}
+
+	return opts.toConfig(), nil
 }
 
 func readEntrypoint(zr *zip.Reader) ([]byte, error) {
@@ -120,7 +134,7 @@ func (o *Options) toConfig() *risor.Config {
 
 type Option func(*Options)
 
-func WithOS(os risoros.OS) Option {
+func withOS(os risoros.OS) Option {
 	return func(o *Options) {
 		o.os = os
 	}
