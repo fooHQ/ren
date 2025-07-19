@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,10 +17,10 @@ import (
 )
 
 var (
-	ErrIsEmpty     = errors.New("directory is empty")
-	ErrInvalidMain = errors.New("main file is not a regular file")
-	ErrMissingMain = errors.New("main file is missing")
+	ErrMissingEntrypoint = errors.New("missing entrypoint")
 )
+
+var exts = []string{".risor", ".rsr"}
 
 const fileExt = "zip"
 
@@ -31,12 +32,7 @@ func NewFilename(name string) string {
 }
 
 func Build(src, dst string) error {
-	err := isEmpty(src)
-	if err != nil {
-		return err
-	}
-
-	err = isMain(src)
+	err := isEntrypoint(src)
 	if err != nil {
 		return err
 	}
@@ -170,58 +166,20 @@ func createTempZip(src string) (string, error) {
 	return f.Name(), nil
 }
 
-func isEmpty(dir string) error {
-	f, err := os.Open(dir)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	_, err = f.Readdirnames(1)
-	if errors.Is(err, io.EOF) {
-		return ErrIsEmpty
-	}
-
-	return err
-}
-
-func isMain(dir string) error {
-	f, err := os.Open(dir)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	files, err := f.Readdirnames(-1)
-	if err != nil {
-		if errors.Is(err, io.EOF) {
+func isEntrypoint(dir string) error {
+	for _, ext := range exts {
+		info, err := os.Stat(filepath.Join(dir, "entrypoint"+ext))
+		if err == nil && info.Mode().IsRegular() {
+			return nil
+		}
+		if err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
-		return ErrMissingMain
 	}
-
-	for _, name := range files {
-		if name != "main.risor" && name != "main.rsr" {
-			continue
-		}
-
-		info, err := os.Stat(filepath.Join(dir, name))
-		if err != nil {
-			return err
-		}
-
-		if !info.Mode().IsRegular() {
-			return ErrInvalidMain
-		}
-
-		return nil
-	}
-
-	return ErrMissingMain
+	return ErrMissingEntrypoint
 }
 
 func isRisorScript(filename string) bool {
-	exts := []string{".risor", ".rsr"}
 	for _, ext := range exts {
 		if strings.HasSuffix(filename, ext) {
 			return true

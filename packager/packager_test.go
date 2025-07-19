@@ -18,28 +18,23 @@ func TestBuild(t *testing.T) {
 
 	zr, err := zip.OpenReader(out)
 	require.NoError(t, err)
-	require.Equal(t, "main.json", zr.File[0].Name)
-	zr.Close()
+	defer zr.Close()
+
+	var names []string
+	for _, f := range zr.File {
+		names = append(names, f.Name)
+	}
+	require.EqualValues(t, names, []string{"entrypoint.json", "main.json", "next2.json"})
 }
 
-func TestBuildIsEmpty(t *testing.T) {
-	src, err := os.MkdirTemp(os.TempDir(), "fzz")
-	require.NoError(t, err)
-	defer os.RemoveAll(src)
-
-	out := packager.NewFilename("empty")
-	err = packager.Build(src, out)
-	require.ErrorIs(t, err, packager.ErrIsEmpty)
-}
-
-func TestBuildMissingMain(t *testing.T) {
+func TestBuildMissingEntrypoint(t *testing.T) {
 	out := packager.NewFilename("helo")
-	err := packager.Build("testdata/nomain", out)
-	require.ErrorIs(t, err, packager.ErrMissingMain)
+	err := packager.Build("testdata/noentrypoint", out)
+	require.ErrorIs(t, err, packager.ErrMissingEntrypoint)
 }
 
 func TestBuildInvalidMain(t *testing.T) {
 	out := packager.NewFilename("helo")
-	err := packager.Build("testdata/noregmain", out)
-	require.ErrorIs(t, err, packager.ErrInvalidMain)
+	err := packager.Build("testdata/inventrypoint", out)
+	require.ErrorIs(t, err, packager.ErrMissingEntrypoint)
 }

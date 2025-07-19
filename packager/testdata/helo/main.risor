@@ -1,5 +1,3 @@
 func main() {
-    print("HELO!")
+    v := 3*3
 }
-
-main()
