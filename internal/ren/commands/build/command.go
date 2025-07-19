@@ -58,7 +58,7 @@ func buildAction() cli.ActionFunc {
 
 		err := packager.Build(srcDir, outputName)
 		if err != nil {
-			err := fmt.Errorf("build error: %s", err.Error())
+			err := fmt.Errorf("build error: %w", err)
 			_, _ = fmt.Fprintln(os.Stderr, err)
 			return err
 		}
