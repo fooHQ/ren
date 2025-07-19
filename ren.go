@@ -89,7 +89,7 @@ func buildConfig(opt ...Option) (*risor.Config, error) {
 }
 
 func readEntrypoint(zr *zip.Reader) ([]byte, error) {
-	f, err := zr.Open("main.json")
+	f, err := zr.Open("entrypoint.json")
 	if err != nil {
 		return nil, err
 	}
