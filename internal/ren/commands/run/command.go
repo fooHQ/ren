@@ -48,7 +48,7 @@ func action(ctx context.Context, c *cli.Command) error {
 
 func runAction(filesystems map[string]risoros.FS) cli.ActionFunc {
 	return func(ctx context.Context, c *cli.Command) error {
-		if c.Args().Len() != 1 {
+		if c.Args().Len() == 0 {
 			err := fmt.Errorf("command expects the following arguments: %s", c.ArgsUsage)
 			_, _ = fmt.Fprintln(os.Stderr, err)
 			return err
