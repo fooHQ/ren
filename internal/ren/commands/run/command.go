@@ -55,7 +55,7 @@ func runAction(filesystems map[string]risoros.FS) cli.ActionFunc {
 		}
 
 		pkg := c.Args().First()
-		args := c.Args().Tail()
+		args := c.Args().Slice()
 
 		ros := renos.New(
 			renos.WithStdin(os.Stdin),
