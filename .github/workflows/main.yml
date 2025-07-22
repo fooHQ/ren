@@ -1,5 +1,7 @@
 name: Workflow
 on: push
+permissions:
+  contents: write
 jobs:
   linter:
     name: Lint source files
