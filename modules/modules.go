@@ -9,7 +9,6 @@ import (
 	moderrors "github.com/foohq/ren/modules/errors"
 	modexec "github.com/foohq/ren/modules/exec"
 	modfilepath "github.com/foohq/ren/modules/filepath"
-	modfmt "github.com/foohq/ren/modules/fmt"
 	modhttp "github.com/foohq/ren/modules/http"
 	modjson "github.com/foohq/ren/modules/json"
 	modmath "github.com/foohq/ren/modules/math"
@@ -31,7 +30,6 @@ var modules = map[string]*object.Module{
 	"errors":   moderrors.Module(),
 	"exec":     modexec.Module(),
 	"filepath": modfilepath.Module(),
-	"fmt":      modfmt.Module(),
 	"http":     modhttp.Module(),
 	"json":     modjson.Module(),
 	"math":     modmath.Module(),
