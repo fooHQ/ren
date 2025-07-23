@@ -4,7 +4,6 @@ import (
 	"github.com/risor-io/risor/object"
 
 	modbase64 "github.com/foohq/ren/modules/base64"
-	modbuiltins "github.com/foohq/ren/modules/builtins"
 	modbytes "github.com/foohq/ren/modules/bytes"
 	modcli "github.com/foohq/ren/modules/cli"
 	moderrors "github.com/foohq/ren/modules/errors"
@@ -27,7 +26,6 @@ import (
 
 var modules = map[string]*object.Module{
 	"base64":   modbase64.Module(),
-	"builtins": modbuiltins.Module(),
 	"bytes":    modbytes.Module(),
 	"cli":      modcli.Module(),
 	"errors":   moderrors.Module(),
