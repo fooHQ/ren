@@ -63,17 +63,6 @@ func Globals() map[string]any {
 	return result
 }
 
-func GlobalNames() []string {
-	result := make([]string, 0, len(modules))
-	for name, module := range modules {
-		if module == nil {
-			continue
-		}
-		result = append(result, name)
-	}
-	return result
-}
-
 // BuildTag returns build tag for a module name. The function does not check existence of the module.
 func BuildTag(name string) string {
 	return "module_" + name
