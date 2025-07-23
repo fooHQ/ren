@@ -259,7 +259,3 @@ func Module() *object.Module {
 		"walk_dir":   object.NewBuiltin("walk_dir", WalkDir),
 	})
 }
-
-func Builtins() map[string]object.Object {
-	return nil
-}

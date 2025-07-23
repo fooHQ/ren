@@ -9,7 +9,3 @@ import (
 func Module() *object.Module {
 	return nil
 }
-
-func Builtins() map[string]object.Object {
-	return nil
-}
