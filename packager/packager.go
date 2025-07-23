@@ -107,7 +107,7 @@ func copyToTempDir(src string) (string, error) {
 
 			code, err := compiler.Compile(
 				prog,
-				compiler.WithFilename(dstPth),
+				compiler.WithFilename(srcPth),
 				compiler.WithGlobalNames(globalNames),
 			)
 			if err != nil {
