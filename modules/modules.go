@@ -25,52 +25,28 @@ import (
 	modurlpath "github.com/foohq/ren/modules/urlpath"
 )
 
-var (
-	modules = map[string]*object.Module{
-		"base64":   modbase64.Module(),
-		"builtins": modbuiltins.Module(),
-		"bytes":    modbytes.Module(),
-		"cli":      modcli.Module(),
-		"errors":   moderrors.Module(),
-		"exec":     modexec.Module(),
-		"filepath": modfilepath.Module(),
-		"fmt":      modfmt.Module(),
-		"http":     modhttp.Module(),
-		"json":     modjson.Module(),
-		"math":     modmath.Module(),
-		"net":      modnet.Module(),
-		"os":       modos.Module(),
-		"rand":     modrand.Module(),
-		"regexp":   modregexp.Module(),
-		"shlex":    modshlex.Module(),
-		"strconv":  modstrconv.Module(),
-		"strings":  modstrings.Module(),
-		"time":     modtime.Module(),
-		"urlpath":  modurlpath.Module(),
-	}
-	builtins = map[string]map[string]object.Object{
-		"base64":   modbase64.Builtins(),
-		"builtins": modbuiltins.Builtins(),
-		"bytes":    modbytes.Builtins(),
-		"cli":      modcli.Builtins(),
-		"errors":   moderrors.Builtins(),
-		"exec":     modexec.Builtins(),
-		"filepath": modfilepath.Builtins(),
-		"fmt":      modfmt.Builtins(),
-		"http":     modhttp.Builtins(),
-		"json":     modjson.Builtins(),
-		"math":     modmath.Builtins(),
-		"net":      modnet.Builtins(),
-		"os":       modos.Builtins(),
-		"rand":     modrand.Builtins(),
-		"regexp":   modregexp.Builtins(),
-		"shlex":    modshlex.Builtins(),
-		"strconv":  modstrconv.Builtins(),
-		"strings":  modstrings.Builtins(),
-		"time":     modtime.Builtins(),
-		"urlpath":  modurlpath.Builtins(),
-	}
-)
+var modules = map[string]*object.Module{
+	"base64":   modbase64.Module(),
+	"builtins": modbuiltins.Module(),
+	"bytes":    modbytes.Module(),
+	"cli":      modcli.Module(),
+	"errors":   moderrors.Module(),
+	"exec":     modexec.Module(),
+	"filepath": modfilepath.Module(),
+	"fmt":      modfmt.Module(),
+	"http":     modhttp.Module(),
+	"json":     modjson.Module(),
+	"math":     modmath.Module(),
+	"net":      modnet.Module(),
+	"os":       modos.Module(),
+	"rand":     modrand.Module(),
+	"regexp":   modregexp.Module(),
+	"shlex":    modshlex.Module(),
+	"strconv":  modstrconv.Module(),
+	"strings":  modstrings.Module(),
+	"time":     modtime.Module(),
+	"urlpath":  modurlpath.Module(),
+}
 
 func Modules() []string {
 	result := make([]string, 0, len(modules))
@@ -81,39 +57,23 @@ func Modules() []string {
 }
 
 func Globals() map[string]any {
-	result := make(map[string]any, len(modules)+len(builtins))
+	result := make(map[string]any, len(modules))
 	for name, module := range modules {
 		if module == nil {
 			continue
 		}
 		result[name] = module
 	}
-	for _, builtin := range builtins {
-		if builtin == nil {
-			continue
-		}
-		for name, fn := range builtin {
-			result[name] = fn
-		}
-	}
 	return result
 }
 
 func GlobalNames() []string {
-	result := make([]string, len(modules)+len(builtins))
+	result := make([]string, 0, len(modules))
 	for name, module := range modules {
 		if module == nil {
 			continue
 		}
 		result = append(result, name)
-	}
-	for _, builtin := range builtins {
-		if builtin == nil {
-			continue
-		}
-		for name := range builtin {
-			result = append(result, name)
-		}
 	}
 	return result
 }

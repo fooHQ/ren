@@ -10,7 +10,3 @@ import (
 func Module() *object.Module {
 	return modregexp.Module()
 }
-
-func Builtins() map[string]object.Object {
-	return nil
-}
