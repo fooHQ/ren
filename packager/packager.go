@@ -13,6 +13,7 @@ import (
 	"github.com/risor-io/risor/compiler"
 	"github.com/risor-io/risor/parser"
 
+	"github.com/foohq/ren/builtins"
 	"github.com/foohq/ren/modules"
 )
 
@@ -100,10 +101,14 @@ func copyToTempDir(src string) (string, error) {
 				return err
 			}
 
+			var globalNames []string
+			globalNames = append(globalNames, modules.Modules()...)
+			globalNames = append(globalNames, builtins.Builtins()...)
+
 			code, err := compiler.Compile(
 				prog,
 				compiler.WithFilename(dstPth),
-				compiler.WithGlobalNames(modules.GlobalNames()),
+				compiler.WithGlobalNames(globalNames),
 			)
 			if err != nil {
 				return err
