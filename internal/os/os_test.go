@@ -6,7 +6,7 @@ import (
 	risoros "github.com/risor-io/risor/os"
 	"github.com/stretchr/testify/require"
 
-	engineos "github.com/foohq/ren/os"
+	"github.com/foohq/ren/internal/os"
 	"github.com/foohq/ren/testutils"
 )
 
@@ -18,8 +18,8 @@ func TestOS_Args(t *testing.T) {
 		"second",
 		"third",
 	}
-	o := engineos.New(
-		engineos.WithArgs(args),
+	o := os.New(
+		os.WithArgs(args),
 	)
 	actualArgs := o.Args()
 	require.Equal(t, args, actualArgs)
@@ -31,9 +31,9 @@ func TestOS_Create(t *testing.T) {
 		"file": testutils.NewFS(testCh),
 		"test": testutils.NewFS(testCh),
 	}
-	o := engineos.New(
-		engineos.WithWorkDir("/ren"),
-		engineos.WithFilesystems(fss),
+	o := os.New(
+		os.WithWorkDir("/ren"),
+		os.WithFilesystems(fss),
 	)
 
 	tests := []struct {
@@ -123,9 +123,9 @@ func TestOS_Mkdir(t *testing.T) {
 		"file": testutils.NewFS(resultCh),
 		"test": testutils.NewFS(resultCh),
 	}
-	o := engineos.New(
-		engineos.WithWorkDir("/ren"),
-		engineos.WithFilesystems(fss),
+	o := os.New(
+		os.WithWorkDir("/ren"),
+		os.WithFilesystems(fss),
 	)
 
 	tests := []struct {
@@ -226,9 +226,9 @@ func TestOS_MkdirAll(t *testing.T) {
 		"file": testutils.NewFS(resultCh),
 		"test": testutils.NewFS(resultCh),
 	}
-	o := engineos.New(
-		engineos.WithWorkDir("/ren"),
-		engineos.WithFilesystems(fss),
+	o := os.New(
+		os.WithWorkDir("/ren"),
+		os.WithFilesystems(fss),
 	)
 
 	tests := []struct {
@@ -329,9 +329,9 @@ func TestOS_Open(t *testing.T) {
 		"file": testutils.NewFS(resultCh),
 		"test": testutils.NewFS(resultCh),
 	}
-	o := engineos.New(
-		engineos.WithWorkDir("/ren"),
-		engineos.WithFilesystems(fss),
+	o := os.New(
+		os.WithWorkDir("/ren"),
+		os.WithFilesystems(fss),
 	)
 
 	tests := []struct {
@@ -421,9 +421,9 @@ func TestOS_OpenFile(t *testing.T) {
 		"file": testutils.NewFS(resultCh),
 		"test": testutils.NewFS(resultCh),
 	}
-	o := engineos.New(
-		engineos.WithWorkDir("/ren"),
-		engineos.WithFilesystems(fss),
+	o := os.New(
+		os.WithWorkDir("/ren"),
+		os.WithFilesystems(fss),
 	)
 
 	tests := []struct {
@@ -535,9 +535,9 @@ func TestOS_ReadFile(t *testing.T) {
 		"file": testutils.NewFS(resultCh),
 		"test": testutils.NewFS(resultCh),
 	}
-	o := engineos.New(
-		engineos.WithWorkDir("/ren"),
-		engineos.WithFilesystems(fss),
+	o := os.New(
+		os.WithWorkDir("/ren"),
+		os.WithFilesystems(fss),
 	)
 
 	tests := []struct {
@@ -627,9 +627,9 @@ func TestOS_Remove(t *testing.T) {
 		"file": testutils.NewFS(resultCh),
 		"test": testutils.NewFS(resultCh),
 	}
-	o := engineos.New(
-		engineos.WithWorkDir("/ren"),
-		engineos.WithFilesystems(fss),
+	o := os.New(
+		os.WithWorkDir("/ren"),
+		os.WithFilesystems(fss),
 	)
 
 	tests := []struct {
@@ -719,9 +719,9 @@ func TestOS_RemoveAll(t *testing.T) {
 		"file": testutils.NewFS(resultCh),
 		"test": testutils.NewFS(resultCh),
 	}
-	o := engineos.New(
-		engineos.WithWorkDir("/ren"),
-		engineos.WithFilesystems(fss),
+	o := os.New(
+		os.WithWorkDir("/ren"),
+		os.WithFilesystems(fss),
 	)
 
 	tests := []struct {
@@ -811,9 +811,9 @@ func TestOS_Rename(t *testing.T) {
 		"file": testutils.NewFS(resultCh),
 		"test": testutils.NewFS(resultCh),
 	}
-	o := engineos.New(
-		engineos.WithWorkDir("/ren"),
-		engineos.WithFilesystems(fss),
+	o := os.New(
+		os.WithWorkDir("/ren"),
+		os.WithFilesystems(fss),
 	)
 
 	tests := []struct {
@@ -877,9 +877,9 @@ func TestOS_Rename_ErrCrossingFSBoundaries(t *testing.T) {
 		"file": testutils.NewFS(nil),
 		"test": testutils.NewFS(nil),
 	}
-	o := engineos.New(
-		engineos.WithWorkDir("/ren"),
-		engineos.WithFilesystems(fss),
+	o := os.New(
+		os.WithWorkDir("/ren"),
+		os.WithFilesystems(fss),
 	)
 
 	tests := []struct {
@@ -898,7 +898,7 @@ func TestOS_Rename_ErrCrossingFSBoundaries(t *testing.T) {
 
 	for i, test := range tests {
 		err := o.Rename(test.src, test.dst)
-		require.ErrorIs(t, err, engineos.ErrCrossingFSBoundaries, "test %d/%d", i+1, len(tests))
+		require.ErrorIs(t, err, os.ErrCrossingFSBoundaries, "test %d/%d", i+1, len(tests))
 	}
 }
 
@@ -908,9 +908,9 @@ func TestOS_Stat(t *testing.T) {
 		"file": testutils.NewFS(resultCh),
 		"test": testutils.NewFS(resultCh),
 	}
-	o := engineos.New(
-		engineos.WithWorkDir("/ren"),
-		engineos.WithFilesystems(fss),
+	o := os.New(
+		os.WithWorkDir("/ren"),
+		os.WithFilesystems(fss),
 	)
 
 	tests := []struct {
@@ -1000,9 +1000,9 @@ func TestOS_Symlink(t *testing.T) {
 		"file": testutils.NewFS(resultCh),
 		"test": testutils.NewFS(resultCh),
 	}
-	o := engineos.New(
-		engineos.WithWorkDir("/ren"),
-		engineos.WithFilesystems(fss),
+	o := os.New(
+		os.WithWorkDir("/ren"),
+		os.WithFilesystems(fss),
 	)
 
 	tests := []struct {
@@ -1066,9 +1066,9 @@ func TestOS_Symlink_ErrCrossingFSBoundaries(t *testing.T) {
 		"file": testutils.NewFS(nil),
 		"test": testutils.NewFS(nil),
 	}
-	o := engineos.New(
-		engineos.WithWorkDir("/ren"),
-		engineos.WithFilesystems(fss),
+	o := os.New(
+		os.WithWorkDir("/ren"),
+		os.WithFilesystems(fss),
 	)
 
 	tests := []struct {
@@ -1087,7 +1087,7 @@ func TestOS_Symlink_ErrCrossingFSBoundaries(t *testing.T) {
 
 	for i, test := range tests {
 		err := o.Symlink(test.src, test.dst)
-		require.ErrorIs(t, err, engineos.ErrCrossingFSBoundaries, "test %d/%d", i+1, len(tests))
+		require.ErrorIs(t, err, os.ErrCrossingFSBoundaries, "test %d/%d", i+1, len(tests))
 	}
 }
 
@@ -1097,9 +1097,9 @@ func TestOS_WriteFile(t *testing.T) {
 		"file": testutils.NewFS(resultCh),
 		"test": testutils.NewFS(resultCh),
 	}
-	o := engineos.New(
-		engineos.WithWorkDir("/ren"),
-		engineos.WithFilesystems(fss),
+	o := os.New(
+		os.WithWorkDir("/ren"),
+		os.WithFilesystems(fss),
 	)
 
 	tests := []struct {
@@ -1211,9 +1211,9 @@ func TestOS_ReadDir(t *testing.T) {
 		"file": testutils.NewFS(resultCh),
 		"test": testutils.NewFS(resultCh),
 	}
-	o := engineos.New(
-		engineos.WithWorkDir("/ren"),
-		engineos.WithFilesystems(fss),
+	o := os.New(
+		os.WithWorkDir("/ren"),
+		os.WithFilesystems(fss),
 	)
 
 	tests := []struct {
@@ -1303,9 +1303,9 @@ func TestOS_WalkDir(t *testing.T) {
 		"file": testutils.NewFS(resultCh),
 		"test": testutils.NewFS(resultCh),
 	}
-	o := engineos.New(
-		engineos.WithWorkDir("/ren"),
-		engineos.WithFilesystems(fss),
+	o := os.New(
+		os.WithWorkDir("/ren"),
+		os.WithFilesystems(fss),
 	)
 
 	tests := []struct {

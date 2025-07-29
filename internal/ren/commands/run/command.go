@@ -22,7 +22,7 @@ func NewCommand() *cli.Command {
 		Name:      "run",
 		Usage:     "Run Risor script from a package",
 		ArgsUsage: "<pkg> [[arg] ...]",
-		Flags: []cli.Flag{
+		Flags:     []cli.Flag{
 			// TODO: support env variables
 		},
 		Action:       action,
