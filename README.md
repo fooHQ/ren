@@ -19,61 +19,55 @@ go get github.com/foohq/ren
 package main
 
 import (
-    "context"
-    "os"
+	"context"
+	"os"
 
-    "github.com/foohq/ren"
-    "github.com/foohq/ren/filesystems/local"
-    "github.com/foohq/ren/modules"
-    renos "github.com/foohq/ren/os"
-    "github.com/foohq/ren/packager"
-    risoros "github.com/risor-io/risor/os"
+	"github.com/foohq/ren"
+	"github.com/foohq/ren/filesystems/local"
+	"github.com/foohq/ren/modules"
+	"github.com/foohq/ren/packager"
+	risoros "github.com/risor-io/risor/os"
 )
 
 func getArgs() []string {
-    if len(os.Args) > 1 {
-        return os.Args[1:]
-    }
-    return []string{}	
+	if len(os.Args) > 1 {
+		return os.Args[1:]
+	}
+	return []string{}
 }
 
 func main() {
-    outputName := "cat.zip"
-    // Create a package from a script found in a local directory.
-    // Builder recognizes Risor scripts by .risor, .rsr extension.
-    // Packager parses, compiles Risor scripts and writes compiled bytecode to .json files.
-    // Files are then zipped to create a package file.
-    err := packager.Build("/home/user/scripts/cat", outputName)
-    if err != nil {
-        panic(err)
-    }
+	outputName := "cat.zip"
+	// Create a package from a script found in a local directory.
+	// Builder recognizes Risor scripts by .risor, .rsr extension.
+	// Packager parses, compiles Risor scripts and writes compiled bytecode to .json files.
+	// Files are then zipped to create a package file.
+	err := packager.Build("/home/user/scripts/cat", outputName)
+	if err != nil {
+		panic(err)
+	}
 
-    // Instantiate a local filesystem.
-    // Other compatible synthetic filesystems can be found in standalone repositories.
-    // Visit https://github.com/fooHQ?q=filesystem.
-    localFS, err := local.NewFS()
-    if err != nil {
-        panic(err)
-    }
+	// Instantiate a local filesystem.
+	// Other compatible synthetic filesystems can be found in standalone repositories.
+	// Visit https://github.com/fooHQ?q=filesystem.
+	localFS, err := local.NewFS()
+	if err != nil {
+		panic(err)
+	}
 
-    // Instantiate OS which provides context to a running script as well as methods to interface with the operating system.
-    ros := renos.New(
-        renos.WithStdin(os.Stdin),
-        renos.WithStdout(os.Stdout),
-        renos.WithArgs(getArgs()),
-        renos.WithFilesystems(map[string]risoros.FS{
-            "file": localFS,
-        }),
-    )
-    err = ren.RunFile(
-        context.Background(),
-        outputName,
-        ros,
-        ren.WithGlobals(modules.Globals()),
-    )
-    if err != nil {
-        panic(err)
-    }
+	err = ren.RunFile(
+		context.Background(),
+		outputName,
+		ren.WithStdin(os.Stdin),
+		ren.WithStdout(os.Stdout),
+		ren.WithArgs(getArgs()),
+		ren.WithFilesystems(map[string]risoros.FS{
+			"file": localFS,
+		}),
+	)
+	if err != nil {
+		panic(err)
+	}
 }
 ```
 

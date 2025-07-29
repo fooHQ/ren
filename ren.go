@@ -14,15 +14,19 @@ import (
 	"github.com/risor-io/risor/parser"
 	"github.com/risor-io/risor/vm"
 
+	renos "github.com/foohq/ren/os"
+
+	"github.com/foohq/ren/builtins"
 	"github.com/foohq/ren/importer"
+	"github.com/foohq/ren/modules"
 )
 
-func RunBytes(ctx context.Context, b []byte, ros risoros.OS, opts ...Option) error {
+func RunBytes(ctx context.Context, b []byte, opts ...Option) error {
 	reader := bytes.NewReader(b)
-	return Run(ctx, reader, reader.Size(), ros, opts...)
+	return Run(ctx, reader, reader.Size(), opts...)
 }
 
-func RunFile(ctx context.Context, filename string, ros risoros.OS, opts ...Option) error {
+func RunFile(ctx context.Context, filename string, opts ...Option) error {
 	f, err := os.Open(filename)
 	if err != nil {
 		return err
@@ -34,11 +38,10 @@ func RunFile(ctx context.Context, filename string, ros risoros.OS, opts ...Optio
 		return err
 	}
 
-	return Run(ctx, f, inf.Size(), ros, opts...)
+	return Run(ctx, f, inf.Size(), opts...)
 }
 
-func Run(ctx context.Context, reader io.ReaderAt, size int64, ros risoros.OS, opt ...Option) error {
-	opt = append(opt, withOS(ros))
+func Run(ctx context.Context, reader io.ReaderAt, size int64, opt ...Option) error {
 	conf, err := buildConfig(opt...)
 	if err != nil {
 		return err
@@ -79,12 +82,6 @@ func buildConfig(opt ...Option) (*risor.Config, error) {
 	for _, o := range opt {
 		o(&opts)
 	}
-
-	err := opts.Validate()
-	if err != nil {
-		return nil, err
-	}
-
 	return opts.toConfig(), nil
 }
 
@@ -104,50 +101,53 @@ func readEntrypoint(zr *zip.Reader) ([]byte, error) {
 }
 
 type Options struct {
-	os      risoros.OS
-	globals map[string]any
-}
-
-func (o *Options) Validate() error {
-	if o.os == nil {
-		return errors.New("ren: OS not specified")
-	}
-
-	return nil
+	opts []renos.Option
 }
 
 func (o *Options) toConfig() *risor.Config {
 	var opts = []risor.Option{
+		risor.WithOS(renos.New(o.opts...)),
 		risor.WithoutDefaultGlobals(),
+		risor.WithGlobals(builtins.Globals()),
+		risor.WithGlobals(modules.Globals()),
 	}
-
-	if o.os != nil {
-		opts = append(opts, risor.WithOS(o.os))
-	}
-
-	if o.globals != nil {
-		opts = append(opts, risor.WithGlobals(o.globals))
-	}
-
 	return risor.NewConfig(opts...)
 }
 
 type Option func(*Options)
 
-func withOS(os risoros.OS) Option {
+func WithEnvVar(name, value string) Option {
 	return func(o *Options) {
-		o.os = os
+		o.opts = append(o.opts, renos.WithEnvVar(name, value))
 	}
 }
 
-func WithGlobals(globals map[string]any) Option {
+func WithArgs(args []string) Option {
 	return func(o *Options) {
-		if o.globals == nil {
-			o.globals = make(map[string]any)
-		}
-		for k, v := range globals {
-			o.globals[k] = v
-		}
+		o.opts = append(o.opts, renos.WithArgs(args))
+	}
+}
+
+func WithStdin(file risoros.File) Option {
+	return func(o *Options) {
+		o.opts = append(o.opts, renos.WithStdin(file))
+	}
+}
+func WithStdout(file risoros.File) Option {
+	return func(o *Options) {
+		o.opts = append(o.opts, renos.WithStdout(file))
+	}
+}
+
+func WithWorkDir(dir string) Option {
+	return func(o *Options) {
+		o.opts = append(o.opts, renos.WithWorkDir(dir))
+	}
+}
+
+func WithFilesystems(fss map[string]risoros.FS) Option {
+	return func(o *Options) {
+		o.opts = append(o.opts, renos.WithFilesystems(fss))
 	}
 }
 

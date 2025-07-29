@@ -11,8 +11,6 @@ import (
 	"github.com/foohq/ren"
 	"github.com/foohq/ren/filesystems/local"
 	"github.com/foohq/ren/internal/ren/actions"
-	"github.com/foohq/ren/modules"
-	renos "github.com/foohq/ren/os"
 )
 
 const (
@@ -24,7 +22,7 @@ func NewCommand() *cli.Command {
 		Name:      "run",
 		Usage:     "Run Risor script from a package",
 		ArgsUsage: "<pkg> [[arg] ...]",
-		Flags:     []cli.Flag{
+		Flags: []cli.Flag{
 			// TODO: support env variables
 		},
 		Action:       action,
@@ -57,18 +55,13 @@ func runAction(filesystems map[string]risoros.FS) cli.ActionFunc {
 		pkg := c.Args().First()
 		args := c.Args().Slice()
 
-		ros := renos.New(
-			renos.WithStdin(os.Stdin),
-			renos.WithStdout(os.Stdout),
-			renos.WithArgs(args),
-			renos.WithFilesystems(filesystems),
-		)
-
 		err := ren.RunFile(
 			ctx,
 			pkg,
-			ros,
-			ren.WithGlobals(modules.Globals()),
+			ren.WithStdin(os.Stdin),
+			ren.WithStdout(os.Stdout),
+			ren.WithArgs(args),
+			ren.WithFilesystems(filesystems),
 		)
 		if err != nil {
 			err := fmt.Errorf("run error: %w", err)
