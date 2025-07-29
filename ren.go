@@ -15,7 +15,7 @@ import (
 	"github.com/risor-io/risor/vm"
 
 	"github.com/foohq/ren/builtins"
-	"github.com/foohq/ren/importer"
+	"github.com/foohq/ren/internal/importer"
 	renos "github.com/foohq/ren/internal/os"
 	"github.com/foohq/ren/modules"
 )
