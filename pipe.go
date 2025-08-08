@@ -1,4 +1,4 @@
-package os
+package ren
 
 import (
 	"io"
@@ -10,7 +10,7 @@ import (
 var _ risoros.File = &Pipe{}
 
 // Pipe implements Risor's os.File interface.
-// The type is backed by Go's io.Pipe therefore it allows concurrent read/write.
+// The type is backed by Go's io.Pipe, therefore, it allows concurrent read/write.
 type Pipe struct {
 	r *io.PipeReader
 	w *io.PipeWriter
