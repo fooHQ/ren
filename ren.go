@@ -150,6 +150,12 @@ func WithFilesystems(fss map[string]risoros.FS) Option {
 	}
 }
 
+func WithExitHandler(handler renos.ExitHandler) Option {
+	return func(o *Options) {
+		o.opts = append(o.opts, renos.WithExitHandler(handler))
+	}
+}
+
 type Error struct {
 	err error
 }
