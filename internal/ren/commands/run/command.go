@@ -11,6 +11,7 @@ import (
 	"github.com/foohq/ren"
 	"github.com/foohq/ren/filesystems/local"
 	"github.com/foohq/ren/internal/ren/actions"
+	"github.com/foohq/ren/modules"
 )
 
 const (
@@ -55,13 +56,24 @@ func runAction(filesystems map[string]risoros.FS) cli.ActionFunc {
 		pkg := c.Args().First()
 		args := c.Args().Slice()
 
-		err := ren.RunFile(
-			ctx,
-			pkg,
+		opts := []ren.Option{
 			ren.WithStdin(os.Stdin),
 			ren.WithStdout(os.Stdout),
 			ren.WithArgs(args),
 			ren.WithFilesystems(filesystems),
+		}
+		for _, name := range modules.Modules() {
+			mod, ok := modules.Module(name)
+			if !ok {
+				continue
+			}
+			opts = append(opts, ren.WithModule(mod))
+		}
+
+		err := ren.RunFile(
+			ctx,
+			pkg,
+			opts...,
 		)
 		if err != nil {
 			err := fmt.Errorf("run error: %w", err)
