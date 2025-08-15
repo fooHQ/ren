@@ -1,4 +1,4 @@
-//go:build !module_errors
+//go:build errors_module_stub
 
 package errors
 

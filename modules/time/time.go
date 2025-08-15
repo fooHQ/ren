@@ -1,4 +1,4 @@
-//go:build module_time
+//go:build !time_module_stub
 
 package time
 

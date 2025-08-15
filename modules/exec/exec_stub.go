@@ -1,4 +1,4 @@
-//go:build !module_exec
+//go:build exec_module_stub
 
 package exec
 

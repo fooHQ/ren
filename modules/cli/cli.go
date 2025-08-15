@@ -1,4 +1,4 @@
-//go:build module_cli
+//go:build !cli_module_stub
 
 package cli
 

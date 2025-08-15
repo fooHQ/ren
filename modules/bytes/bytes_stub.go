@@ -1,4 +1,4 @@
-//go:build !module_bytes
+//go:build bytes_module_stub
 
 package bytes
 

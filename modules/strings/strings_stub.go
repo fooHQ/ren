@@ -1,4 +1,4 @@
-//go:build !module_strings
+//go:build strings_module_stub
 
 package strings
 

@@ -1,4 +1,4 @@
-//go:build module_rand
+//go:build !rand_module_stub
 
 package rand
 

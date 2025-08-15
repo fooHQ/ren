@@ -1,4 +1,4 @@
-//go:build !module_json
+//go:build json_module_stub
 
 package json
 

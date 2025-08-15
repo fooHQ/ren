@@ -1,4 +1,4 @@
-//go:build !module_strconv
+//go:build strconv_module_stub
 
 package strconv
 

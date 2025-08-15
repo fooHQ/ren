@@ -1,4 +1,4 @@
-//go:build module_math
+//go:build !math_module_stub
 
 package math
 

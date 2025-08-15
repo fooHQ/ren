@@ -1,4 +1,4 @@
-//go:build module_regexp
+//go:build !regexp_module_stub
 
 package regexp
 
