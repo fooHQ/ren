@@ -11,10 +11,10 @@ import (
 	"strings"
 
 	"github.com/risor-io/risor/compiler"
+	"github.com/risor-io/risor/object"
 	"github.com/risor-io/risor/parser"
 
 	"github.com/foohq/ren/builtins"
-	"github.com/foohq/ren/modules"
 )
 
 var (
@@ -32,13 +32,18 @@ func NewFilename(name string) string {
 	return name + "." + fileExt
 }
 
-func Build(src, dst string) error {
+func Build(src, dst string, opt ...Option) error {
+	var opts Options
+	for _, o := range opt {
+		o(&opts)
+	}
+
 	err := isEntrypoint(src)
 	if err != nil {
 		return err
 	}
 
-	tmpDir, err := walkSourceDir(src)
+	tmpDir, err := walkSourceDir(src, &opts)
 	if err != nil {
 		return err
 	}
@@ -62,7 +67,7 @@ func Build(src, dst string) error {
 	return nil
 }
 
-func walkSourceDir(src string) (string, error) {
+func walkSourceDir(src string, opts *Options) (string, error) {
 	tmpDir, err := os.MkdirTemp(".", "ren*")
 	if err != nil {
 		return "", err
@@ -91,7 +96,7 @@ func walkSourceDir(src string) (string, error) {
 		}
 
 		if isRisorScript(srcPth) {
-			err = compileScript(context.Background(), srcPth, dstPth)
+			err = compileScript(context.Background(), srcPth, dstPth, opts.ModuleNames())
 		} else {
 			err = copyFile(srcPth, dstPth)
 		}
@@ -152,7 +157,7 @@ func isRisorScript(filename string) bool {
 	return false
 }
 
-func compileScript(ctx context.Context, src, dst string) error {
+func compileScript(ctx context.Context, src, dst string, modules []string) error {
 	b, err := os.ReadFile(src)
 	if err != nil {
 		return err
@@ -164,7 +169,7 @@ func compileScript(ctx context.Context, src, dst string) error {
 	}
 
 	var globalNames []string
-	globalNames = append(globalNames, modules.Modules()...)
+	globalNames = append(globalNames, modules...)
 	globalNames = append(globalNames, builtins.Builtins()...)
 
 	code, err := compiler.Compile(
@@ -208,4 +213,27 @@ func copyFile(src, dst string) error {
 func replaceScriptExt(filename string) string {
 	name := strings.TrimSuffix(filename, filepath.Ext(filename))
 	return name + ".json"
+}
+
+type Options struct {
+	modules []*object.Module
+}
+
+func (o *Options) ModuleNames() []string {
+	names := make([]string, 0, len(o.modules))
+	for _, module := range o.modules {
+		names = append(names, module.Name().Value())
+	}
+	return names
+}
+
+type Option func(*Options)
+
+func WithModule(module *object.Module) Option {
+	return func(o *Options) {
+		if module == nil {
+			return
+		}
+		o.modules = append(o.modules, module)
+	}
 }
