@@ -1,14 +1,8 @@
 #!/usr/bin/env sh
 
-export MODULES="$(tr '\n'  ' ' < default_modules.txt)"
-
 test() {
-    if [ -z "$TAGS" ]; then
-        TAGS="$MODULES"
-    fi
-
     export CGO_ENABLED=1
-    go test -tags "$TAGS" -race ./...
+    go test -race ./...
 }
 
 build() {
@@ -16,11 +10,7 @@ build() {
         OUTPUT="build/ren"
     fi
 
-    if [ -z "$TAGS" ]; then
-        TAGS="$MODULES"
-    fi
-
-    go build -tags "$TAGS" -o "$OUTPUT" ./cmd/ren
+    go build -o "$OUTPUT" ./cmd/ren
 }
 
 eval $@
