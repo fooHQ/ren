@@ -24,7 +24,7 @@ func TestBuild(t *testing.T) {
 	for _, f := range zr.File {
 		names = append(names, f.Name)
 	}
-	require.EqualValues(t, names, []string{"entrypoint.json", "main.json", "next2.json"})
+	require.EqualValues(t, []string{"entrypoint.json", "main.json", "next2.json"}, names)
 }
 
 func TestBuildMissingEntrypoint(t *testing.T) {
