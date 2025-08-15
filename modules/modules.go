@@ -55,7 +55,7 @@ func Modules() []string {
 
 func Module(name string) (*object.Module, bool) {
 	module, ok := modules[name]
-	return module, ok
+	return module, module != nil && ok
 }
 
 // StubBuildTag returns a build tag for a module name. The function does not check the existence of a module.
