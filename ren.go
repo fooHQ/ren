@@ -59,7 +59,7 @@ func Run(ctx context.Context, reader io.ReaderAt, size int64, opt ...Option) err
 	}
 
 	imp := importer.NewImporter(importer.ImporterOptions{
-		GlobalNames: conf.GlobalNames(),
+		GlobalNames: code.GlobalNames(),
 		SourceFS:    zr,
 	})
 
