@@ -38,7 +38,7 @@ func Build(src, dst string) error {
 		return err
 	}
 
-	tmpDir, err := copyToTempDir(src)
+	tmpDir, err := walkSourceDir(src)
 	if err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func Build(src, dst string) error {
 	return nil
 }
 
-func copyToTempDir(src string) (string, error) {
+func walkSourceDir(src string) (string, error) {
 	tmpDir, err := os.MkdirTemp(".", "ren*")
 	if err != nil {
 		return "", err
@@ -91,52 +91,11 @@ func copyToTempDir(src string) (string, error) {
 		}
 
 		if isRisorScript(srcPth) {
-			b, err := os.ReadFile(srcPth)
-			if err != nil {
-				return err
-			}
-
-			prog, err := parser.Parse(context.Background(), string(b))
-			if err != nil {
-				return err
-			}
-
-			var globalNames []string
-			globalNames = append(globalNames, modules.Modules()...)
-			globalNames = append(globalNames, builtins.Builtins()...)
-
-			code, err := compiler.Compile(
-				prog,
-				compiler.WithFilename(srcPth),
-				compiler.WithGlobalNames(globalNames),
-			)
-			if err != nil {
-				return err
-			}
-
-			b, err = code.MarshalJSON()
-			if err != nil {
-				return err
-			}
-
-			err = os.WriteFile(replaceScriptExt(dstPth), b, 0644)
-			if err != nil {
-				return err
-			}
+			err = compileScript(context.Background(), srcPth, dstPth)
 		} else {
-			fileSrc, err := os.Open(srcPth)
-			if err != nil {
-				return err
-			}
-			defer fileSrc.Close()
-
-			fileDst, err := os.Create(dstPth)
-			if err != nil {
-				return err
-			}
-			defer fileDst.Close()
-
-			_, err = io.Copy(fileDst, fileSrc)
+			err = copyFile(srcPth, dstPth)
+		}
+		if err != nil {
 			return err
 		}
 
@@ -191,6 +150,59 @@ func isRisorScript(filename string) bool {
 		}
 	}
 	return false
+}
+
+func compileScript(ctx context.Context, src, dst string) error {
+	b, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+
+	prog, err := parser.Parse(ctx, string(b))
+	if err != nil {
+		return err
+	}
+
+	var globalNames []string
+	globalNames = append(globalNames, modules.Modules()...)
+	globalNames = append(globalNames, builtins.Builtins()...)
+
+	code, err := compiler.Compile(
+		prog,
+		compiler.WithFilename(src),
+		compiler.WithGlobalNames(globalNames),
+	)
+	if err != nil {
+		return err
+	}
+
+	b, err = code.MarshalJSON()
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(replaceScriptExt(dst), b, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func copyFile(src, dst string) error {
+	fileSrc, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer fileSrc.Close()
+
+	fileDst, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer fileDst.Close()
+
+	_, err = io.Copy(fileDst, fileSrc)
+	return err
 }
 
 func replaceScriptExt(filename string) string {
