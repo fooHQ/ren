@@ -10,6 +10,7 @@ import (
 
 	"github.com/risor-io/risor"
 	"github.com/risor-io/risor/compiler"
+	"github.com/risor-io/risor/object"
 	risoros "github.com/risor-io/risor/os"
 	"github.com/risor-io/risor/parser"
 	"github.com/risor-io/risor/vm"
@@ -17,7 +18,6 @@ import (
 	"github.com/foohq/ren/builtins"
 	"github.com/foohq/ren/internal/importer"
 	renos "github.com/foohq/ren/internal/os"
-	"github.com/foohq/ren/modules"
 )
 
 func RunBytes(ctx context.Context, b []byte, opts ...Option) error {
@@ -41,10 +41,7 @@ func RunFile(ctx context.Context, filename string, opts ...Option) error {
 }
 
 func Run(ctx context.Context, reader io.ReaderAt, size int64, opt ...Option) error {
-	conf, err := buildConfig(opt...)
-	if err != nil {
-		return err
-	}
+	conf := buildConfig(opt...)
 
 	zr, err := zip.NewReader(reader, size)
 	if err != nil {
@@ -76,12 +73,17 @@ func Run(ctx context.Context, reader io.ReaderAt, size int64, opt ...Option) err
 	return nil
 }
 
-func buildConfig(opt ...Option) (*risor.Config, error) {
+func buildConfig(opt ...Option) *risor.Config {
 	var opts Options
 	for _, o := range opt {
 		o(&opts)
 	}
-	return opts.toConfig(), nil
+	return risor.NewConfig([]risor.Option{
+		risor.WithOS(renos.New(opts.Options()...)),
+		risor.WithoutDefaultGlobals(),
+		risor.WithGlobals(builtins.Globals()),
+		risor.WithGlobals(opts.Modules()),
+	}...)
 }
 
 func readEntrypoint(zr *zip.Reader) ([]byte, error) {
@@ -100,17 +102,20 @@ func readEntrypoint(zr *zip.Reader) ([]byte, error) {
 }
 
 type Options struct {
-	opts []renos.Option
+	opts    []renos.Option
+	modules []*object.Module
 }
 
-func (o *Options) toConfig() *risor.Config {
-	var opts = []risor.Option{
-		risor.WithOS(renos.New(o.opts...)),
-		risor.WithoutDefaultGlobals(),
-		risor.WithGlobals(builtins.Globals()),
-		risor.WithGlobals(modules.Globals()),
+func (o *Options) Options() []renos.Option {
+	return o.opts
+}
+
+func (o *Options) Modules() map[string]any {
+	result := make(map[string]any, len(o.modules))
+	for _, module := range o.modules {
+		result[module.Name().Value()] = module
 	}
-	return risor.NewConfig(opts...)
+	return result
 }
 
 type Option func(*Options)
@@ -153,6 +158,15 @@ func WithFilesystems(fss map[string]risoros.FS) Option {
 func WithExitHandler(handler renos.ExitHandler) Option {
 	return func(o *Options) {
 		o.opts = append(o.opts, renos.WithExitHandler(handler))
+	}
+}
+
+func WithModule(module *object.Module) Option {
+	return func(o *Options) {
+		if module == nil {
+			return
+		}
+		o.modules = append(o.modules, module)
 	}
 }
 
