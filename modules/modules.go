@@ -44,6 +44,7 @@ var modules = map[string]*object.Module{
 	"urlpath":  modurlpath.Module(),
 }
 
+// Modules returns list of all existing modules. Modules that are not enabled with a build tag are included, but their value is nil.
 func Modules() []string {
 	result := make([]string, 0, len(modules))
 	for name := range modules {
@@ -52,18 +53,7 @@ func Modules() []string {
 	return result
 }
 
-func Globals() map[string]any {
-	result := make(map[string]any, len(modules))
-	for name, module := range modules {
-		if module == nil {
-			continue
-		}
-		result[name] = module
-	}
-	return result
-}
-
-// BuildTag returns build tag for a module name. The function does not check existence of the module.
+// BuildTag returns a build tag for a module name. The function does not check the existence of a module.
 func BuildTag(name string) string {
 	return "module_" + name
 }
