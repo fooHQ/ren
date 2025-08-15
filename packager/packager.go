@@ -79,8 +79,9 @@ func walkSourceDir(src string, opts *Options) (string, error) {
 			return err
 		}
 
+		srcPth = filepath.ToSlash(srcPth)
 		if srcPrefix == "" {
-			srcPrefix = srcPth
+			srcPrefix = filepath.ToSlash(filepath.Clean(srcPth))
 		}
 
 		if info.IsDir() {
@@ -88,7 +89,7 @@ func walkSourceDir(src string, opts *Options) (string, error) {
 			return nil
 		}
 
-		dstPth := filepath.Join(tmpDir, strings.TrimPrefix(filepath.ToSlash(srcPth), filepath.ToSlash(srcPrefix)))
+		dstPth := filepath.Join(tmpDir, strings.TrimPrefix(srcPth, srcPrefix))
 
 		err = os.MkdirAll(filepath.Dir(dstPth), 0755)
 		if err != nil {
