@@ -1,7 +1,9 @@
 package ren
 
 import (
+	"errors"
 	"io"
+	"io/fs"
 	"time"
 
 	risoros "github.com/risor-io/risor/os"
@@ -25,7 +27,11 @@ func NewPipe() *Pipe {
 }
 
 func (f *Pipe) Write(p []byte) (int, error) {
-	return f.w.Write(p)
+	n, err := f.w.Write(p)
+	if errors.Is(err, io.ErrClosedPipe) {
+		return n, fs.ErrClosed
+	}
+	return n, err
 }
 
 func (f *Pipe) Stat() (risoros.FileInfo, error) {
@@ -39,7 +45,11 @@ func (f *Pipe) Stat() (risoros.FileInfo, error) {
 }
 
 func (f *Pipe) Read(p []byte) (int, error) {
-	return f.r.Read(p)
+	n, err := f.r.Read(p)
+	if errors.Is(err, io.ErrClosedPipe) {
+		return n, fs.ErrClosed
+	}
+	return n, err
 }
 
 func (f *Pipe) Close() error {
