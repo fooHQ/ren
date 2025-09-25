@@ -53,15 +53,15 @@ func (f *Pipe) Read(p []byte) (int, error) {
 }
 
 func (f *Pipe) Close() error {
-	err := f.w.Close()
-	if err != nil {
-		return err
-	}
+	wErr := f.w.Close()
+	rErr := f.r.Close()
 
-	err = f.r.Close()
-	if err != nil {
-		return err
+	var err error
+	if wErr != nil {
+		err = wErr
 	}
-
-	return nil
+	if rErr != nil {
+		err = rErr
+	}
+	return err
 }
