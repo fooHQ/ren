@@ -5,47 +5,30 @@ import (
 	"fmt"
 	"os"
 
-	risoros "github.com/risor-io/risor/os"
 	"github.com/urfave/cli/v3"
 
 	"github.com/foohq/ren"
-	"github.com/foohq/ren/filesystems/local"
+	"github.com/foohq/ren/builtins"
 	"github.com/foohq/ren/internal/ren/actions"
 	"github.com/foohq/ren/modules"
 )
 
-const (
-	FlagEnv = "env"
-)
-
 func NewCommand() *cli.Command {
 	return &cli.Command{
-		Name:      "run",
-		Usage:     "Run Risor script from a package",
-		ArgsUsage: "<pkg> [[arg] ...]",
-		Flags:     []cli.Flag{
-			// TODO: support env variables
-		},
+		Name:         "run",
+		Usage:        "Run Risor script from a package",
+		ArgsUsage:    "<pkg> [[arg] ...]",
+		Flags:        []cli.Flag{},
 		Action:       action,
 		OnUsageError: actions.UsageError,
 	}
 }
 
 func action(ctx context.Context, c *cli.Command) error {
-	localFS, err := local.NewFS()
-	if err != nil {
-		err := fmt.Errorf("cannot initialize local filesystem: %w", err)
-		_, _ = fmt.Fprintln(os.Stderr, err)
-		return err
-	}
-
-	filesystems := map[string]risoros.FS{
-		"file": localFS,
-	}
-	return runAction(filesystems)(ctx, c)
+	return runAction()(ctx, c)
 }
 
-func runAction(filesystems map[string]risoros.FS) cli.ActionFunc {
+func runAction() cli.ActionFunc {
 	return func(ctx context.Context, c *cli.Command) error {
 		if c.Args().Len() == 0 {
 			err := fmt.Errorf("command expects the following arguments: %s", c.ArgsUsage)
@@ -54,20 +37,17 @@ func runAction(filesystems map[string]risoros.FS) cli.ActionFunc {
 		}
 
 		pkg := c.Args().First()
-		args := c.Args().Slice()
+		args := c.Args().Tail()
 
 		opts := []ren.Option{
-			ren.WithStdin(os.Stdin),
-			ren.WithStdout(os.Stdout),
 			ren.WithArgs(args),
-			ren.WithFilesystems(filesystems),
 		}
-		for _, name := range modules.Modules() {
-			mod, ok := modules.Module(name)
-			if !ok {
-				continue
-			}
-			opts = append(opts, ren.WithModule(mod))
+		for _, builtin := range builtins.Builtins() {
+			opts = append(opts, ren.WithBuiltin(builtin))
+		}
+
+		for _, module := range modules.Modules() {
+			opts = append(opts, ren.WithModule(module))
 		}
 
 		err := ren.RunFile(
