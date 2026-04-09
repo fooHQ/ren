@@ -1,3 +1,1 @@
-from main import app
-
-app.run(os.args())
+print("hello")
