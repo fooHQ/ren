@@ -1,8 +1,0 @@
-var app = cli.app({
-    name: "hello",
-    usage: "Say hello",
-    hide_help_command: true,
-    action: func(c) {
-        print("Hello World!")
-    }
-})
