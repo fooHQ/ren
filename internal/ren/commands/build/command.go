@@ -8,6 +8,7 @@ import (
 
 	"github.com/urfave/cli/v3"
 
+	"github.com/foohq/ren/builtins"
 	"github.com/foohq/ren/internal/ren/actions"
 	"github.com/foohq/ren/modules"
 	"github.com/foohq/ren/packager"
@@ -58,12 +59,12 @@ func buildAction() cli.ActionFunc {
 		}
 
 		var opts []packager.Option
-		for _, name := range modules.Modules() {
-			mod, ok := modules.Module(name)
-			if !ok {
-				continue
-			}
-			opts = append(opts, packager.WithModule(mod))
+		for _, builtin := range builtins.Builtins() {
+			opts = append(opts, packager.WithBuiltin(builtin))
+		}
+
+		for _, module := range modules.Modules() {
+			opts = append(opts, packager.WithModule(module))
 		}
 
 		err := packager.Build(
