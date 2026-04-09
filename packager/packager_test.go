@@ -2,39 +2,87 @@ package packager_test
 
 import (
 	"archive/zip"
+	"context"
 	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/deepnoodle-ai/risor/v2/pkg/object"
 	"github.com/stretchr/testify/require"
 
 	"github.com/foohq/ren/packager"
 )
 
 func TestBuild(t *testing.T) {
-	out := packager.NewFilename("helo")
-	defer os.Remove(out)
-	err := packager.Build("testdata/helo", out)
-	require.NoError(t, err)
-
-	zr, err := zip.OpenReader(out)
-	require.NoError(t, err)
-	defer zr.Close()
-
-	var names []string
-	for _, f := range zr.File {
-		names = append(names, f.Name)
+	tests := []struct {
+		pth       string
+		builtins  []*object.Builtin
+		modules   []*object.Module
+		wantFiles []string
+		wantErr   error
+	}{
+		{
+			pth:     "testdata/bad_entrypoint",
+			wantErr: packager.ErrMissingEntrypoint,
+		},
+		{
+			pth:     "testdata/missing_entrypoint",
+			wantErr: packager.ErrMissingEntrypoint,
+		},
+		{
+			pth: "testdata/hello",
+			builtins: []*object.Builtin{
+				object.NewBuiltin("print", func(ctx context.Context, args ...object.Object) (object.Object, error) {
+					return object.Nil, nil
+				}),
+			},
+			modules: []*object.Module{
+				object.NewBuiltinsModule("test", map[string]object.Object{
+					"hello": object.NewBuiltin("hello", func(ctx context.Context, args ...object.Object) (object.Object, error) {
+						return object.Nil, nil
+					}),
+				}),
+			},
+			wantFiles: []string{
+				"entrypoint.json",
+				"main.json",
+			},
+		},
 	}
-	require.EqualValues(t, []string{"entrypoint.json", "main.json", "next2.json"}, names)
-}
 
-func TestBuildMissingEntrypoint(t *testing.T) {
-	out := packager.NewFilename("helo")
-	err := packager.Build("testdata/noentrypoint", out)
-	require.ErrorIs(t, err, packager.ErrMissingEntrypoint)
-}
+	for _, tt := range tests {
+		t.Run(tt.pth, func(t *testing.T) {
+			out := packager.NewFilename(filepath.Base(tt.pth))
+			defer func() {
+				_ = os.Remove(out)
+			}()
 
-func TestBuildInvalidMain(t *testing.T) {
-	out := packager.NewFilename("helo")
-	err := packager.Build("testdata/inventrypoint", out)
-	require.ErrorIs(t, err, packager.ErrMissingEntrypoint)
+			var opts []packager.Option
+			for _, o := range tt.builtins {
+				opts = append(opts, packager.WithBuiltin(o))
+			}
+			for _, o := range tt.modules {
+				opts = append(opts, packager.WithModule(o))
+			}
+
+			err := packager.Build(tt.pth, out, opts...)
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+				return
+			}
+			require.NoError(t, err)
+
+			zr, err := zip.OpenReader(out)
+			require.NoError(t, err)
+			defer func() {
+				_ = zr.Close()
+			}()
+
+			var names []string
+			for _, f := range zr.File {
+				names = append(names, f.Name)
+			}
+			require.EqualValues(t, tt.wantFiles, names)
+		})
+	}
 }

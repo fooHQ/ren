@@ -10,11 +10,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/risor-io/risor/compiler"
-	"github.com/risor-io/risor/object"
-	"github.com/risor-io/risor/parser"
-
-	"github.com/foohq/ren/builtins"
+	"github.com/deepnoodle-ai/risor/v2/pkg/compiler"
+	"github.com/deepnoodle-ai/risor/v2/pkg/object"
+	"github.com/deepnoodle-ai/risor/v2/pkg/parser"
 )
 
 var (
@@ -33,7 +31,7 @@ func NewFilename(name string) string {
 }
 
 func Build(src, dst string, opt ...Option) error {
-	var opts Options
+	var opts options
 	for _, o := range opt {
 		o(&opts)
 	}
@@ -67,7 +65,7 @@ func Build(src, dst string, opt ...Option) error {
 	return nil
 }
 
-func walkSourceDir(src string, opts *Options) (string, error) {
+func walkSourceDir(src string, opts *options) (string, error) {
 	tmpDir, err := os.MkdirTemp(".", "ren*")
 	if err != nil {
 		return "", err
@@ -97,7 +95,7 @@ func walkSourceDir(src string, opts *Options) (string, error) {
 		}
 
 		if isRisorScript(srcPth) {
-			err = compileScript(context.Background(), srcPth, dstPth, opts.ModuleNames())
+			err = compileScript(context.Background(), srcPth, dstPth, opts.GlobalNames())
 		} else {
 			err = copyFile(srcPth, dstPth)
 		}
@@ -158,26 +156,30 @@ func isRisorScript(filename string) bool {
 	return false
 }
 
-func compileScript(ctx context.Context, src, dst string, modules []string) error {
+func compileScript(ctx context.Context, src, dst string, globalNames []string) error {
 	b, err := os.ReadFile(src)
 	if err != nil {
 		return err
 	}
 
-	prog, err := parser.Parse(ctx, string(b))
+	prog, err := parser.Parse(ctx, string(b), &parser.Config{
+		Filename: src,
+		MaxDepth: 0,
+	})
 	if err != nil {
 		return err
 	}
 
-	var globalNames []string
-	globalNames = append(globalNames, modules...)
-	globalNames = append(globalNames, builtins.Builtins()...)
+	comp, err := compiler.New(&compiler.Config{
+		GlobalNames: globalNames,
+		Filename:    src,
+		Source:      string(b),
+	})
+	if err != nil {
+		return err
+	}
 
-	code, err := compiler.Compile(
-		prog,
-		compiler.WithFilename(src),
-		compiler.WithGlobalNames(globalNames),
-	)
+	code, err := comp.CompileAST(prog)
 	if err != nil {
 		return err
 	}
@@ -199,13 +201,17 @@ func copyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer fileSrc.Close()
+	defer func() {
+		_ = fileSrc.Close()
+	}()
 
 	fileDst, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	defer fileDst.Close()
+	defer func() {
+		_ = fileDst.Close()
+	}()
 
 	_, err = io.Copy(fileDst, fileSrc)
 	return err
@@ -216,22 +222,35 @@ func replaceScriptExt(filename string) string {
 	return name + ".json"
 }
 
-type Options struct {
-	modules []*object.Module
+type options struct {
+	builtins []*object.Builtin
+	modules  []*object.Module
 }
 
-func (o *Options) ModuleNames() []string {
+func (o *options) GlobalNames() []string {
 	names := make([]string, 0, len(o.modules))
+	for _, builtin := range o.builtins {
+		names = append(names, builtin.Name())
+	}
 	for _, module := range o.modules {
 		names = append(names, module.Name().Value())
 	}
 	return names
 }
 
-type Option func(*Options)
+type Option func(*options)
+
+func WithBuiltin(builtin *object.Builtin) Option {
+	return func(options *options) {
+		if builtin == nil {
+			return
+		}
+		options.builtins = append(options.builtins, builtin)
+	}
+}
 
 func WithModule(module *object.Module) Option {
-	return func(o *Options) {
+	return func(o *options) {
 		if module == nil {
 			return
 		}
