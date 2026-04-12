@@ -1,10 +1,8 @@
-//go:build !math_module_stub
-
 package math
 
 import (
-	modmath "github.com/risor-io/risor/modules/math"
-	"github.com/risor-io/risor/object"
+	modmath "github.com/deepnoodle-ai/risor/v2/pkg/modules/math"
+	"github.com/deepnoodle-ai/risor/v2/pkg/object"
 )
 
 func Module() *object.Module {
