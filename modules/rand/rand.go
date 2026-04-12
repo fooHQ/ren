@@ -1,10 +1,8 @@
-//go:build !rand_module_stub
-
 package rand
 
 import (
-	modrand "github.com/risor-io/risor/modules/rand"
-	"github.com/risor-io/risor/object"
+	modrand "github.com/deepnoodle-ai/risor/v2/pkg/modules/rand"
+	"github.com/deepnoodle-ai/risor/v2/pkg/object"
 )
 
 func Module() *object.Module {
