@@ -1,10 +1,8 @@
-//go:build !regexp_module_stub
-
 package regexp
 
 import (
-	modregexp "github.com/risor-io/risor/modules/regexp"
-	"github.com/risor-io/risor/object"
+	modregexp "github.com/deepnoodle-ai/risor/v2/pkg/modules/regexp"
+	"github.com/deepnoodle-ai/risor/v2/pkg/object"
 )
 
 func Module() *object.Module {
