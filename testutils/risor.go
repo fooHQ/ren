@@ -259,7 +259,7 @@ func (m *MockFileInfo) IsDir() bool {
 	return args.Bool(0)
 }
 
-func (m *MockFileInfo) Sys() interface{} {
+func (m *MockFileInfo) Sys() any {
 	args := m.Called()
 	return args.Get(0)
 }
