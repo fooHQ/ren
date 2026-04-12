@@ -1,64 +1,35 @@
 package modules
 
 import (
-	"github.com/risor-io/risor/object"
+	"maps"
 
-	modbase64 "github.com/foohq/ren/modules/base64"
-	modbytes "github.com/foohq/ren/modules/bytes"
-	modcli "github.com/foohq/ren/modules/cli"
-	moderrors "github.com/foohq/ren/modules/errors"
-	modexec "github.com/foohq/ren/modules/exec"
+	"github.com/deepnoodle-ai/risor/v2/pkg/object"
+
 	modfilepath "github.com/foohq/ren/modules/filepath"
-	modhttp "github.com/foohq/ren/modules/http"
-	modjson "github.com/foohq/ren/modules/json"
+	modfs "github.com/foohq/ren/modules/fs"
 	modmath "github.com/foohq/ren/modules/math"
-	modnet "github.com/foohq/ren/modules/net"
 	modos "github.com/foohq/ren/modules/os"
 	modrand "github.com/foohq/ren/modules/rand"
 	modregexp "github.com/foohq/ren/modules/regexp"
 	modshlex "github.com/foohq/ren/modules/shlex"
-	modstrconv "github.com/foohq/ren/modules/strconv"
-	modstrings "github.com/foohq/ren/modules/strings"
-	modtime "github.com/foohq/ren/modules/time"
-	modurlpath "github.com/foohq/ren/modules/urlpath"
 )
 
 var modules = map[string]*object.Module{
-	"base64":   modbase64.Module(),
-	"bytes":    modbytes.Module(),
-	"cli":      modcli.Module(),
-	"errors":   moderrors.Module(),
-	"exec":     modexec.Module(),
+	//"cli":      modcli.Module(),
+	//"exec":     modexec.Module(),
 	"filepath": modfilepath.Module(),
-	"http":     modhttp.Module(),
-	"json":     modjson.Module(),
-	"math":     modmath.Module(),
-	"net":      modnet.Module(),
-	"os":       modos.Module(),
-	"rand":     modrand.Module(),
-	"regexp":   modregexp.Module(),
-	"shlex":    modshlex.Module(),
-	"strconv":  modstrconv.Module(),
-	"strings":  modstrings.Module(),
-	"time":     modtime.Module(),
-	"urlpath":  modurlpath.Module(),
+	"fs":       modfs.Module(),
+	//"http":     modhttp.Module(),
+	"math": modmath.Module(),
+	//"net":      modnet.Module(),
+	"os":     modos.Module(),
+	"rand":   modrand.Module(),
+	"regexp": modregexp.Module(),
+	"shlex":  modshlex.Module(),
 }
 
-// Modules returns names of all existing modules, including those that are not enabled with build tags.
-func Modules() []string {
-	result := make([]string, 0, len(modules))
-	for name := range modules {
-		result = append(result, name)
-	}
+func Modules() map[string]*object.Module {
+	result := make(map[string]*object.Module, len(modules))
+	maps.Copy(result, modules)
 	return result
-}
-
-func Module(name string) (*object.Module, bool) {
-	module, ok := modules[name]
-	return module, module != nil && ok
-}
-
-// StubBuildTag returns a build tag for a module name. The function does not check the existence of a module.
-func StubBuildTag(name string) string {
-	return name + "_module_stub"
 }
