@@ -72,7 +72,7 @@ func (f *File) cleanup() {
 	}()
 }
 
-func (f *File) Interface() interface{} {
+func (f *File) Interface() any {
 	return f.value
 }
 

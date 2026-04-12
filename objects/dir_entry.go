@@ -41,7 +41,7 @@ func (d *DirEntry) Type() object.Type {
 	return DIRENTRY
 }
 
-func (d *DirEntry) Interface() interface{} {
+func (d *DirEntry) Interface() any {
 	return d.value
 }
 

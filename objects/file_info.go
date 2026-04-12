@@ -41,7 +41,7 @@ func (f *FileInfo) Type() object.Type {
 	return FILEINFO
 }
 
-func (f *FileInfo) Interface() interface{} {
+func (f *FileInfo) Interface() any {
 	return f.value
 }
 

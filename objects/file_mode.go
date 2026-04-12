@@ -41,7 +41,7 @@ func (m *FileMode) Type() object.Type {
 	return FILEMODE
 }
 
-func (m *FileMode) Interface() interface{} {
+func (m *FileMode) Interface() any {
 	return m.value
 }
 
