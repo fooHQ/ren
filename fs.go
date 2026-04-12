@@ -486,6 +486,6 @@ func (fi *pipeInfo) IsDir() bool {
 	return fi.isDir
 }
 
-func (fi *pipeInfo) Sys() interface{} {
+func (fi *pipeInfo) Sys() any {
 	return nil
 }

@@ -204,9 +204,7 @@ func (o *options) Modules() map[string]any {
 func (o *options) Filesystems() map[string]FS {
 	result := make(map[string]FS, len(o.filesystems))
 	result["file"] = &localFS{}
-	for name, fs := range o.filesystems {
-		result[name] = fs
-	}
+	maps.Copy(result, o.filesystems)
 	return result
 }
 
@@ -250,8 +248,7 @@ func (e *Error) Unwrap() error {
 
 // Error returns the error message.
 func (e *Error) Error() string {
-	var parserErr parser.ParserError
-	if errors.As(e.err, &parserErr) {
+	if parserErr, ok := errors.AsType[parser.ParserError](e.err); ok {
 		return parserErr.FriendlyErrorMessage()
 	}
 	return e.err.Error()
