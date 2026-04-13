@@ -4,6 +4,7 @@
 package builtins
 
 import (
+	"bytes"
 	"context"
 	"maps"
 
@@ -43,19 +44,29 @@ var builtins = map[string]*object.Builtin{
 }
 
 func Print(ctx context.Context, args ...object.Object) (object.Object, error) {
-	if len(args) != 1 {
-		return nil, object.NewArgsError("print", 1, len(args))
+	if len(args) < 1 || len(args) > 64 {
+		return nil, object.NewArgsRangeError("print", 1, 64, len(args))
 	}
-	var b []byte
-	switch obj := args[0].(type) {
-	case *object.String:
-		b = []byte(obj.Value())
-	case *object.Bytes:
-		b = obj.Value()
-	default:
-		b = []byte(obj.Inspect())
+	var b bytes.Buffer
+	for i := range args {
+		if i > 0 {
+			b.WriteByte(' ')
+		}
+		var err error
+		switch obj := args[i].(type) {
+		case *object.String:
+			_, err = b.WriteString(obj.Value())
+		case *object.Bytes:
+			_, err = b.Write(obj.Value())
+		default:
+			_, err = b.WriteString(obj.Inspect())
+		}
+		if err != nil {
+			return nil, err
+		}
 	}
-	_, err := ren.GetOS(ctx).Stdout().Write(append(b, '\n'))
+	b.WriteByte('\n')
+	_, err := ren.GetOS(ctx).Stdout().Write(b.Bytes())
 	if err != nil {
 		return nil, err
 	}
