@@ -33,17 +33,14 @@ func TestPrint(t *testing.T) {
 		{
 			name: "bytes",
 			args: []object.Object{
-				object.NewBytes([]byte("hello world")),
-			},
-			wantOutput: "hello world\n",
-		},
-		{
-			name: "too many args",
-			args: []object.Object{
-				object.Nil,
+				object.NewString("string"),
+				object.NewBytes([]byte("bytes")),
+				object.NewInt(32),
+				object.False,
+				object.True,
 				object.Nil,
 			},
-			wantErr: object.NewArgsError("print", 1, 2),
+			wantOutput: "string bytes 32 false true null\n",
 		},
 	}
 
