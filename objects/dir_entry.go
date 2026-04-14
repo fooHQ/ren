@@ -93,6 +93,7 @@ var dirEntryMethods = object.NewMethodRegistry[*DirEntry](DIRENTRY)
 func init() {
 	dirEntryMethods.Define("name").
 		Doc(""). // TODO
+		Returns("string").
 		Impl(func(d *DirEntry, ctx context.Context, args ...object.Object) (object.Object, error) {
 			if len(args) != 0 {
 				return nil, object.NewArgsError("dir_entry.name", 0, len(args))
@@ -101,6 +102,7 @@ func init() {
 		})
 	dirEntryMethods.Define("info").
 		Doc(""). // TODO
+		Returns(FILEINFO).
 		Impl(func(d *DirEntry, ctx context.Context, args ...object.Object) (object.Object, error) {
 			if len(args) != 0 {
 				return nil, object.NewArgsError("dir_entry.info", 0, len(args))

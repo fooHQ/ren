@@ -110,6 +110,7 @@ func init() {
 		})
 	fileMethods.Define("info").
 		Doc(""). // TODO
+		Returns(FILEINFO).
 		Impl(func(f *File, ctx context.Context, args ...object.Object) (object.Object, error) {
 			if len(args) != 0 {
 				return nil, object.NewArgsError("file.info", 0, len(args))
@@ -122,6 +123,8 @@ func init() {
 		})
 	fileMethods.Define("read").
 		Doc(""). // TODO
+		Arg("data").
+		Returns("bytes").
 		Impl(func(f *File, ctx context.Context, args ...object.Object) (object.Object, error) {
 			if len(args) != 1 {
 				return nil, object.NewArgsError("file.read", 1, len(args))
@@ -142,7 +145,9 @@ func init() {
 			}
 		})
 	fileMethods.Define("write").
-		Doc(""). // TODO
+		Doc("").
+		Arg("data").
+		Returns("int").
 		Impl(func(f *File, ctx context.Context, args ...object.Object) (object.Object, error) {
 			if len(args) != 1 {
 				return nil, object.NewArgsError("file.write", 1, len(args))
@@ -179,6 +184,8 @@ func init() {
 		})
 	fileMethods.Define("seek").
 		Doc(""). // TODO
+		Args("offset", "whence").
+		Returns("int").
 		Impl(func(f *File, ctx context.Context, args ...object.Object) (object.Object, error) {
 			if len(args) != 2 {
 				return nil, object.NewArgsError("file.seek", 2, len(args))

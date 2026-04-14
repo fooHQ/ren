@@ -96,6 +96,7 @@ var fileInfoMethods = object.NewMethodRegistry[*FileInfo](FILEINFO)
 func init() {
 	fileInfoMethods.Define("name").
 		Doc(""). // TODO
+		Returns("string").
 		Impl(func(f *FileInfo, ctx context.Context, args ...object.Object) (object.Object, error) {
 			if len(args) != 0 {
 				return nil, object.NewArgsError("file_info.name", 0, len(args))
@@ -104,6 +105,7 @@ func init() {
 		})
 	fileInfoMethods.Define("size").
 		Doc(""). // TODO
+		Returns("int").
 		Impl(func(f *FileInfo, ctx context.Context, args ...object.Object) (object.Object, error) {
 			if len(args) != 0 {
 				return nil, object.NewArgsError("file_info.size", 0, len(args))
@@ -112,6 +114,7 @@ func init() {
 		})
 	fileInfoMethods.Define("mod_time").
 		Doc(""). // TODO
+		Returns("time").
 		Impl(func(f *FileInfo, ctx context.Context, args ...object.Object) (object.Object, error) {
 			if len(args) != 0 {
 				return nil, object.NewArgsError("file_info.mod_time", 0, len(args))
@@ -120,6 +123,7 @@ func init() {
 		})
 	fileInfoMethods.Define("mode").
 		Doc(""). // TODO
+		Returns(FILEMODE).
 		Impl(func(f *FileInfo, ctx context.Context, args ...object.Object) (object.Object, error) {
 			if len(args) != 0 {
 				return nil, object.NewArgsError("file_info.mode", 0, len(args))
