@@ -146,6 +146,7 @@ var fileModeMethods = object.NewMethodRegistry[*FileMode](FILEMODE)
 func init() {
 	fileModeMethods.Define("is_dir").
 		Doc(""). // TODO
+		Returns("bool").
 		Impl(func(f *FileMode, ctx context.Context, args ...object.Object) (object.Object, error) {
 			if len(args) != 0 {
 				return nil, object.NewArgsError("file_mode.is_dir", 0, len(args))
@@ -154,6 +155,7 @@ func init() {
 		})
 	fileModeMethods.Define("is_regular").
 		Doc(""). // TODO
+		Returns("bool").
 		Impl(func(f *FileMode, ctx context.Context, args ...object.Object) (object.Object, error) {
 			if len(args) != 0 {
 				return nil, object.NewArgsError("file_mode.is_regular", 0, len(args))
@@ -162,6 +164,7 @@ func init() {
 		})
 	fileModeMethods.Define("perm").
 		Doc(""). // TODO
+		Returns("string").
 		Impl(func(f *FileMode, ctx context.Context, args ...object.Object) (object.Object, error) {
 			if len(args) != 0 {
 				return nil, object.NewArgsError("file_mode.perm", 0, len(args))
@@ -170,6 +173,7 @@ func init() {
 		})
 	fileModeMethods.Define("type").
 		Doc(""). // TODO
+		Returns("string").
 		Impl(func(f *FileMode, ctx context.Context, args ...object.Object) (object.Object, error) {
 			if len(args) != 0 {
 				return nil, object.NewArgsError("file_mode.type", 0, len(args))
