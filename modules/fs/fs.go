@@ -269,7 +269,7 @@ func Module() *object.Module {
 		"mkdir":      object.NewBuiltin("mkdir", Mkdir),
 		"mkdir_all":  object.NewBuiltin("mkdir_all", MkdirAll),
 		"mkdir_temp": object.NewBuiltin("mkdir_temp", MkdirTemp),
-		"open_file":  object.NewBuiltin("read_file", OpenFile),
+		"open_file":  object.NewBuiltin("open_file", OpenFile),
 		"read_file":  object.NewBuiltin("read_file", ReadFile),
 		"write_file": object.NewBuiltin("write_file", WriteFile),
 		"remove":     object.NewBuiltin("remove", Remove),
