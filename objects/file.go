@@ -123,8 +123,8 @@ func init() {
 		})
 	fileMethods.Define("read").
 		Doc(""). // TODO
-		Arg("data").
-		Returns("bytes").
+		Arg("buffer").
+		Returns("int").
 		Impl(func(f *File, ctx context.Context, args ...object.Object) (object.Object, error) {
 			if len(args) != 1 {
 				return nil, object.NewArgsError("file.read", 1, len(args))
@@ -136,10 +136,7 @@ func init() {
 				if ioErr != nil && ioErr != io.EOF {
 					return nil, object.NewError(ioErr)
 				}
-				if n == len(slice) {
-					return obj, nil
-				}
-				return object.NewBytes(slice[:n]), nil
+				return object.NewInt(int64(n)), nil
 			default:
 				return nil, object.TypeErrorf("file.read() expected bytes (%s given)", obj.Type())
 			}
