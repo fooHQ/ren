@@ -5,12 +5,13 @@ import (
 
 	"github.com/deepnoodle-ai/risor/v2/pkg/object"
 
+	modmath "github.com/deepnoodle-ai/risor/v2/pkg/modules/math"
+	modrand "github.com/deepnoodle-ai/risor/v2/pkg/modules/rand"
+	modregexp "github.com/deepnoodle-ai/risor/v2/pkg/modules/regexp"
+
 	modfilepath "github.com/foohq/ren/modules/filepath"
 	modfs "github.com/foohq/ren/modules/fs"
-	modmath "github.com/foohq/ren/modules/math"
 	modos "github.com/foohq/ren/modules/os"
-	modrand "github.com/foohq/ren/modules/rand"
-	modregexp "github.com/foohq/ren/modules/regexp"
 	modshlex "github.com/foohq/ren/modules/shlex"
 )
 
