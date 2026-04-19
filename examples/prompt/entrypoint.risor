@@ -1,0 +1,33 @@
+function read_command(b) {
+    const cmd = bytes(list(range(250)))
+    const n = os.stdin.read(cmd)
+    b += string(cmd[:n])
+    if (!b.contains("\n")) {
+        return read_command(b)
+    }
+    b = b.trim_suffix("\n")
+    return b
+}
+
+function main() {
+    let cmd = ""
+    let action = match read_command(cmd) {
+        "hello" => () => {
+            print("Hello World!")
+        },
+        "exit" => () => {
+            print("Goodbye World!")
+            print("(Press Enter to exit)")
+            os.exit(0)
+        },
+        "help" => () => {
+            print("Commands: hello, exit, help")
+        },
+        _ => () => {
+            print("UNKNOWN CMD")
+        },
+    }()
+    main()
+}()
+
+
