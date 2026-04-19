@@ -1,4 +1,5 @@
 function read_command(b) {
+    printf("> ")
     const cmd = bytes(list(range(250)))
     const n = os.stdin.read(cmd)
     b += string(cmd[:n])
