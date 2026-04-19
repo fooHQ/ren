@@ -50,6 +50,12 @@ func runAction() cli.ActionFunc {
 			opts = append(opts, ren.WithModule(module))
 		}
 
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
+		opts = append(opts, ren.WithExitHandler(func(c int) {
+			cancel()
+		}))
+
 		err := ren.RunFile(
 			ctx,
 			pkg,
