@@ -74,3 +74,60 @@ func TestPrint(t *testing.T) {
 
 	cancel()
 }
+
+func TestPrintf(t *testing.T) {
+	tests := []struct {
+		name       string
+		args       []object.Object
+		wantOutput string
+		wantErr    bool
+	}{
+		{
+			name: "single string",
+			args: []object.Object{
+				object.NewString("hello world"),
+			},
+			wantOutput: "hello world",
+		},
+		{
+			name: "string with args",
+			args: []object.Object{
+				object.NewString("hello %s, age %d"),
+				object.NewString("world"),
+				object.NewInt(32),
+			},
+			wantOutput: "hello world, age 32",
+		},
+		{
+			name:    "without args",
+			wantErr: true,
+		},
+	}
+
+	m := &testutils.MockOS{}
+	ctx := ren.WithOS(t.Context(), m)
+
+	stdout := ren.NewPipe()
+	m.On("Stdout").Return(stdout)
+
+	outputCh := make(chan string, 1)
+	go func() {
+		for ctx.Err() == nil {
+			output := make([]byte, 100)
+			n, _ := stdout.Read(output)
+			outputCh <- string(output[:n])
+		}
+	}()
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := builtins.Printf(ctx, tt.args...)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tt.wantOutput, <-outputCh)
+		})
+	}
+}

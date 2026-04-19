@@ -6,6 +6,7 @@ package builtins
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"maps"
 
 	modbuiltins "github.com/deepnoodle-ai/risor/v2/pkg/builtins"
@@ -41,6 +42,7 @@ var builtins = map[string]*object.Builtin{
 	"string":   object.NewBuiltin("string", modbuiltins.String),
 	"type":     object.NewBuiltin("type", modbuiltins.Type),
 	"print":    object.NewBuiltin("print", Print),
+	"printf":   object.NewBuiltin("printf", Printf),
 }
 
 func Print(ctx context.Context, args ...object.Object) (object.Object, error) {
@@ -67,6 +69,26 @@ func Print(ctx context.Context, args ...object.Object) (object.Object, error) {
 	}
 	b.WriteByte('\n')
 	_, err := ren.GetOS(ctx).Stdout().Write(b.Bytes())
+	if err != nil {
+		return nil, err
+	}
+	return object.Nil, nil
+}
+
+func Printf(ctx context.Context, args ...object.Object) (object.Object, error) {
+	if len(args) < 1 || len(args) > 64 {
+		return nil, object.NewArgsRangeError("printf", 1, 64, len(args))
+	}
+	fs, err := object.AsString(args[0])
+	if err != nil {
+		return nil, err
+	}
+	fmtArgs := make([]interface{}, len(args)-1)
+	for i, v := range args[1:] {
+		fmtArgs[i] = v.Interface()
+	}
+	b := []byte(fmt.Sprintf(fs, fmtArgs...))
+	_, err = ren.GetOS(ctx).Stdout().Write(b)
 	if err != nil {
 		return nil, err
 	}
