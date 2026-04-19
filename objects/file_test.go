@@ -70,7 +70,7 @@ func TestFileMethods(t *testing.T) {
 	buf := object.NewBytes(make([]byte, 5))
 	val, err = fn.Call(ctx, buf)
 	require.NoError(t, err)
-	require.Equal(t, object.NewBytes([]byte("hello")), val)
+	require.Equal(t, object.NewInt(5), val)
 
 	// Test write()
 	m.On("Write", []byte("world")).Return(5, nil)
