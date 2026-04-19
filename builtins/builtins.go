@@ -25,8 +25,6 @@ var builtins = map[string]*object.Builtin{
 	"call":     object.NewBuiltin("call", modbuiltins.Call),
 	"chunk":    object.NewBuiltin("chunk", modbuiltins.Chunk),
 	"coalesce": object.NewBuiltin("coalesce", modbuiltins.Coalesce),
-	"decode":   object.NewBuiltin("decode", modbuiltins.Decode),
-	"encode":   object.NewBuiltin("encode", modbuiltins.Encode),
 	"error":    object.NewBuiltin("error", modbuiltins.Error),
 	"filter":   object.NewBuiltin("filter", modbuiltins.Filter),
 	"float":    object.NewBuiltin("float", modbuiltins.Float),
