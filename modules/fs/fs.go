@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 
 	"github.com/deepnoodle-ai/risor/v2/pkg/object"
@@ -266,23 +267,22 @@ func modeToFlags(mode string) (int, error) {
 
 func Module() *object.Module {
 	return object.NewBuiltinsModule("fs", map[string]object.Object{
-		"mkdir":      object.NewBuiltin("mkdir", Mkdir),
-		"mkdir_all":  object.NewBuiltin("mkdir_all", MkdirAll),
-		"mkdir_temp": object.NewBuiltin("mkdir_temp", MkdirTemp),
-		"open_file":  object.NewBuiltin("open_file", OpenFile),
-		"read_file":  object.NewBuiltin("read_file", ReadFile),
-		"write_file": object.NewBuiltin("write_file", WriteFile),
-		"remove":     object.NewBuiltin("remove", Remove),
-		"remove_all": object.NewBuiltin("remove_all", RemoveAll),
-		"rename":     object.NewBuiltin("rename", Rename),
-		"stat":       object.NewBuiltin("stat", Stat),
-		"symlink":    object.NewBuiltin("symlink", Symlink),
-		"read_dir":   object.NewBuiltin("read_dir", ReadDir),
-		// TODO: uncomment these once Risor has a better error handling system
-		/*"err_not_exist":  object.NewError(fs.ErrNotExist),
+		"mkdir":          object.NewBuiltin("mkdir", Mkdir),
+		"mkdir_all":      object.NewBuiltin("mkdir_all", MkdirAll),
+		"mkdir_temp":     object.NewBuiltin("mkdir_temp", MkdirTemp),
+		"open_file":      object.NewBuiltin("open_file", OpenFile),
+		"read_file":      object.NewBuiltin("read_file", ReadFile),
+		"write_file":     object.NewBuiltin("write_file", WriteFile),
+		"remove":         object.NewBuiltin("remove", Remove),
+		"remove_all":     object.NewBuiltin("remove_all", RemoveAll),
+		"rename":         object.NewBuiltin("rename", Rename),
+		"stat":           object.NewBuiltin("stat", Stat),
+		"symlink":        object.NewBuiltin("symlink", Symlink),
+		"read_dir":       object.NewBuiltin("read_dir", ReadDir),
+		"err_not_exist":  object.NewError(fs.ErrNotExist),
 		"err_exist":      object.NewError(fs.ErrExist),
 		"err_permission": object.NewError(fs.ErrPermission),
 		"err_closed":     object.NewError(fs.ErrClosed),
-		"err_invalid":    object.NewError(fs.ErrInvalid),*/
+		"err_invalid":    object.NewError(fs.ErrInvalid),
 	})
 }
