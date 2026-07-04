@@ -5,10 +5,6 @@ import (
 
 	"github.com/deepnoodle-ai/risor/v2/pkg/object"
 
-	modmath "github.com/deepnoodle-ai/risor/v2/pkg/modules/math"
-	modrand "github.com/deepnoodle-ai/risor/v2/pkg/modules/rand"
-	modregexp "github.com/deepnoodle-ai/risor/v2/pkg/modules/regexp"
-
 	modfilepath "github.com/foohq/ren/modules/filepath"
 	modfs "github.com/foohq/ren/modules/fs"
 	modos "github.com/foohq/ren/modules/os"
@@ -21,12 +17,9 @@ var modules = map[string]*object.Module{
 	"filepath": modfilepath.Module(),
 	"fs":       modfs.Module(),
 	//"http":     modhttp.Module(),
-	"math": modmath.Module(),
 	//"net":      modnet.Module(),
-	"os":     modos.Module(),
-	"rand":   modrand.Module(),
-	"regexp": modregexp.Module(),
-	"shlex":  modshlex.Module(),
+	"os":    modos.Module(),
+	"shlex": modshlex.Module(),
 }
 
 func Modules() map[string]*object.Module {
