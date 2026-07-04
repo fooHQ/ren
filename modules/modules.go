@@ -5,6 +5,7 @@ import (
 
 	"github.com/deepnoodle-ai/risor/v2/pkg/object"
 
+	moddll "github.com/foohq/ren/modules/dll"
 	modfilepath "github.com/foohq/ren/modules/filepath"
 	modfs "github.com/foohq/ren/modules/fs"
 	modos "github.com/foohq/ren/modules/os"
@@ -13,6 +14,7 @@ import (
 
 var modules = map[string]*object.Module{
 	//"cli":      modcli.Module(),
+	"dll": moddll.Module(),
 	//"exec":     modexec.Module(),
 	"filepath": modfilepath.Module(),
 	"fs":       modfs.Module(),
