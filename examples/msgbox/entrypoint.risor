@@ -1,0 +1,18 @@
+const user32 = dll.load("user32.dll")
+
+const msg_box = user32.lookup("MessageBoxW")
+
+// MessageBoxW(hWnd, lpText, lpCaption, uType)
+//   hWnd:      0 = no parent window
+//   uType:     1 = MB_OKCANCEL
+const result = msg_box(0, "Hello from Ren!", "Message Box Example", 1)
+
+if (result.value == 0) {
+    print("MessageBoxW failed, errno:", result.errno)
+} else if (result.value == 1) {
+    print("OK clicked")
+} else if (result.value == 2) {
+    print("Cancel clicked")
+}
+
+user32.close()
