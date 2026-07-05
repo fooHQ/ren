@@ -1,0 +1,26 @@
+const kernel32 = dll.load("kernel32.dll")
+const user32 = dll.load("user32.dll")
+
+// GetConsoleWindow returns the HWND of the console window.
+const get_console_window = kernel32.lookup("GetConsoleWindow")
+const hwnd = get_console_window()
+
+if (hwnd.value == 0) {
+    print("GetConsoleWindow failed, errno:", hwnd.errno)
+    kernel32.close()
+    user32.close()
+    os.exit(1)
+}
+
+// ShowWindow(hWnd, nCmdShow) — SW_MINIMIZE = 6
+const show_window = user32.lookup("ShowWindow")
+const result = show_window(hwnd.value, 6)
+
+if (result.value == 0) {
+    print("window was already hidden")
+} else {
+    print("window minimized")
+}
+
+kernel32.close()
+user32.close()
