@@ -41,6 +41,9 @@ var builtins = map[string]*object.Builtin{
 	"sprintf":  object.NewBuiltin("sprintf", modbuiltins.Sprintf),
 	"string":   object.NewBuiltin("string", modbuiltins.String),
 	"type":     object.NewBuiltin("type", modbuiltins.Type),
+	"pack":     object.NewBuiltin("pack", Pack),
+	"packsize": object.NewBuiltin("packsize", Packsize),
+	"unpack":   object.NewBuiltin("unpack", Unpack),
 	"print":    object.NewBuiltin("print", Print),
 	"printf":   object.NewBuiltin("printf", Printf),
 }
