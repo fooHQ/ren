@@ -1,0 +1,31 @@
+const kernel32 = dll.load("kernel32.dll")
+const get_system_info = kernel32.lookup("GetSystemInfo")
+
+// SYSTEM_INFO layout (64-bit Windows, 48 bytes total)
+// https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/ns-sysinfoapi-system_info
+const schema = [
+    ["_",                     "int32"],  // dwOemId (deprecated)
+    ["page_size",             "int32"],
+    ["min_app_address",       "int64"],
+    ["max_app_address",       "int64"],
+    ["active_processor_mask", "int64"],
+    ["num_processors",        "int32"],
+    ["processor_type",        "int32"],
+    ["allocation_granularity","int32"],
+    ["processor_level",       "int16"],
+    ["processor_revision",    "int16"],
+]
+
+const buf = bytes(list(range(packsize(schema))))
+get_system_info.call(buf)
+
+const info = unpack(schema, buf)
+
+print(`Page size:              ${info["page_size"]}`)
+print(`Processors:             ${info["num_processors"]}`)
+print(`Processor type:         ${info["processor_type"]}`)
+print(`Allocation granularity: ${info["allocation_granularity"]}`)
+print(`Processor level:        ${info["processor_level"]}`)
+print(`Processor revision:     ${info["processor_revision"]}`)
+
+kernel32.close()
