@@ -1,3 +1,6 @@
+const dll = import("builtin://dll")
+const os = import("builtin://os")
+
 const kernel32 = dll.load("kernel32.dll")
 const user32 = dll.load("user32.dll")
 
