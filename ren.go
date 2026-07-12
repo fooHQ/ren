@@ -129,11 +129,9 @@ func Run(ctx context.Context, reader io.ReaderAt, size int64, opt ...Option) err
 	}
 
 	builtins := opts.Builtins()
-	modules := opts.Modules()
 
-	env := make(map[string]any, len(builtins)+len(modules))
+	env := make(map[string]any, len(builtins))
 	maps.Copy(env, builtins)
-	maps.Copy(env, modules)
 
 	if !isOS(ctx) {
 		ctx = WithOS(ctx, &osMiddleware{
@@ -144,6 +142,8 @@ func Run(ctx context.Context, reader io.ReaderAt, size int64, opt ...Option) err
 			exitHandler: opts.ExitHandler(),
 		})
 	}
+
+	ctx = WithImporter(ctx, newImporter(zr, opts.Modules(), env))
 
 	_, err = risor.Run(
 		ctx,
@@ -193,8 +193,8 @@ func (o *options) Builtins() map[string]any {
 	return result
 }
 
-func (o *options) Modules() map[string]any {
-	result := make(map[string]any, len(o.modules))
+func (o *options) Modules() map[string]*object.Module {
+	result := make(map[string]*object.Module, len(o.modules))
 	for _, module := range o.modules {
 		result[module.Name().Value()] = module
 	}
