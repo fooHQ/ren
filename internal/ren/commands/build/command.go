@@ -10,7 +10,6 @@ import (
 
 	"github.com/foohq/ren/builtins"
 	"github.com/foohq/ren/internal/ren/actions"
-	"github.com/foohq/ren/modules"
 	"github.com/foohq/ren/packager"
 )
 
@@ -61,10 +60,6 @@ func buildAction() cli.ActionFunc {
 		var opts []packager.Option
 		for _, builtin := range builtins.Builtins() {
 			opts = append(opts, packager.WithBuiltin(builtin))
-		}
-
-		for _, module := range modules.Modules() {
-			opts = append(opts, packager.WithModule(module))
 		}
 
 		err := packager.Build(
