@@ -1,0 +1,53 @@
+const kernel32 = dll.load("kernel32.dll")
+
+const find_first_file = kernel32.lookup("FindFirstFileW")
+const find_close = kernel32.lookup("FindClose")
+
+// FILETIME is a 64-bit timestamp split into two 32-bit halves.
+// https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
+const filetime = [
+    ["low",  "int32"],
+    ["high", "int32"],
+]
+
+// WIN32_FIND_DATAW layout (64-bit Windows, 592 bytes total).
+// The three FILETIME members are nested structs; the two names are
+// fixed-length UTF-16 arrays.
+// https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-win32_find_dataw
+const schema = [
+    ["attributes",    "int32"],
+    ["creation_time", filetime],
+    ["access_time",   filetime],
+    ["write_time",    filetime],
+    ["size_high",     "int32"],
+    ["size_low",      "int32"],
+    ["_",             "int32"],       // dwReserved0
+    ["_",             "int32"],       // dwReserved1
+    ["file_name",     "uint8", 520],  // 260 UTF-16 code units
+    ["alt_file_name", "uint8", 28],   // 14 UTF-16 code units
+]
+
+const buf = bytes(list(range(packsize(schema))))
+
+// FindFirstFileW(lpFileName, lpFindFileData) returns a search handle,
+// or INVALID_HANDLE_VALUE (-1) on failure, and fills the buffer in place.
+const result = find_first_file("C:\\*", buf)
+if (result.value == -1) {
+    print("FindFirstFileW failed, errno:", result.errno)
+    kernel32.close()
+    os.exit(1)
+}
+
+const info = unpack(schema, buf)
+const size = info["size_high"] * 4294967296 + info["size_low"]
+
+// file_name is a fixed 260-WCHAR array; decode it and cut at the NUL terminator.
+const name = decode(info["file_name"], "utf16").split("\x00")[0]
+
+print(`Name:       ${name}`)
+print(`Attributes: ${info["attributes"]}`)
+print(`Size:       ${size}`)
+print(`Write time: ${info["write_time"]["high"]}:${info["write_time"]["low"]}`)
+
+find_close(result.value)
+kernel32.close()
