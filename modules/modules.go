@@ -33,3 +33,23 @@ func Modules() map[string]*object.Module {
 	maps.Copy(result, modules)
 	return result
 }
+
+// ModuleDocs bundles a module's name, its module-level documentation, and the
+// documentation for each name it exposes.
+type ModuleDocs struct {
+	Name  string
+	Doc   string
+	Funcs []object.FuncSpec
+}
+
+// Docs returns documentation for every built-in module, in a stable order
+// suitable for rendering a reference.
+func Docs() []ModuleDocs {
+	return []ModuleDocs{
+		{Name: "os", Doc: modos.ModuleDoc(), Funcs: modos.Docs()},
+		{Name: "fs", Doc: modfs.ModuleDoc(), Funcs: modfs.Docs()},
+		{Name: "filepath", Doc: modfilepath.ModuleDoc(), Funcs: modfilepath.Docs()},
+		{Name: "shlex", Doc: modshlex.ModuleDoc(), Funcs: modshlex.Docs()},
+		{Name: "dll", Doc: moddll.ModuleDoc(), Funcs: moddll.Docs()},
+	}
+}
