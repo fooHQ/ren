@@ -50,7 +50,10 @@ func Build(src, dst string, opt ...Option) error {
 		_ = os.RemoveAll(tmpDir)
 	}()
 
-	tmpZip, err := createTempZip(tmpDir)
+	// Create the temporary zip in the destination directory so that the final
+	// rename stays within a single volume. Renaming across drives fails on
+	// Windows, and across filesystems on Unix.
+	tmpZip, err := createTempZip(tmpDir, filepath.Dir(dst))
 	if err != nil {
 		return err
 	}
@@ -114,8 +117,8 @@ func walkSourceDir(src string, opts *options) (string, error) {
 	return tmpDir, err
 }
 
-func createTempZip(src string) (string, error) {
-	f, err := os.CreateTemp(".", "ren*."+fileExt)
+func createTempZip(src, dir string) (string, error) {
+	f, err := os.CreateTemp(dir, "ren*."+fileExt)
 	if err != nil {
 		return "", err
 	}
