@@ -1,0 +1,33 @@
+const greet = import("lib/greet")
+
+// A module function resolves its module-level PREFIX through a captured upvalue.
+assert(greet.hello("world") == "hello, world")
+
+// A non-function top-level name is exported as a plain value.
+assert(greet.PREFIX == "hello, ")
+
+// Module state is shared across exported functions and persists between calls.
+const counter = import("lib/counter")
+counter.inc()
+counter.inc()
+assert(counter.get() == 2)
+
+// A module that imports another module and calls across the boundary.
+const nested = import("lib/nested")
+assert(nested.greet_upper("bob") == "hello, bob")
+
+// The same import returns the cached module, so its state is preserved.
+const counter2 = import("lib/counter")
+assert(counter2.get() == 2)
+
+// The package:// scheme is the explicit form of a bare package path and
+// resolves to the same cached module.
+const greet_explicit = import("package://lib/greet")
+assert(greet_explicit.hello("there") == "hello, there")
+assert(counter2.get() == import("package://lib/counter").get())
+
+// A built-in module is imported through the builtin:// scheme.
+const fp = import("builtin://filepath")
+assert(fp.base("/a/b/c.txt") == "c.txt")
+
+print("ok")

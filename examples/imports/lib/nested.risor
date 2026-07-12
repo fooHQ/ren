@@ -1,0 +1,7 @@
+// Imports another package module (path is relative to the package root) and
+// re-uses its exported function.
+const greeter = import("lib/greet")
+
+function greet_upper(name) {
+    return greeter.hello(name)
+}
