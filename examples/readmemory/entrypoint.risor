@@ -1,0 +1,27 @@
+const kernel32 = dll.load("kernel32.dll")
+
+const get_command_line = kernel32.lookup("GetCommandLineW")
+const read_process_memory = kernel32.lookup("ReadProcessMemory")
+
+// GetCommandLineW() returns a pointer to the process command line,
+// a NUL-terminated UTF-16 string. The pointer is the return value.
+const addr = get_command_line().value
+
+// Follow the pointer with ReadProcessMemory into a buffer we own.
+//   hProcess = -1           -> GetCurrentProcess() pseudo-handle
+//   lpNumberOfBytesRead = 0 -> NULL (optional out-parameter)
+const buf = bytes(" ".repeat(512))
+const result = read_process_memory(-1, addr, buf, 512, 0)
+if (result.value == 0) {
+    print("ReadProcessMemory failed, errno:", result.errno)
+    kernel32.close()
+    os.exit(1)
+}
+
+// Decode the UTF-16 buffer and cut at the NUL terminator.
+const command_line = decode(buf, "utf16").split("\x00")[0]
+
+print(`Command line pointer: ${addr}`)
+print(`Command line:         ${command_line}`)
+
+kernel32.close()
