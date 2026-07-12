@@ -17,7 +17,6 @@ func TestBuild(t *testing.T) {
 	tests := []struct {
 		pth       string
 		builtins  []*object.Builtin
-		modules   []*object.Module
 		wantFiles []string
 		wantErr   error
 	}{
@@ -34,13 +33,6 @@ func TestBuild(t *testing.T) {
 			builtins: []*object.Builtin{
 				object.NewBuiltin("print", func(ctx context.Context, args ...object.Object) (object.Object, error) {
 					return object.Nil, nil
-				}),
-			},
-			modules: []*object.Module{
-				object.NewBuiltinsModule("test", map[string]object.Object{
-					"hello": object.NewBuiltin("hello", func(ctx context.Context, args ...object.Object) (object.Object, error) {
-						return object.Nil, nil
-					}),
 				}),
 			},
 			wantFiles: []string{
@@ -60,9 +52,6 @@ func TestBuild(t *testing.T) {
 			var opts []packager.Option
 			for _, o := range tt.builtins {
 				opts = append(opts, packager.WithBuiltin(o))
-			}
-			for _, o := range tt.modules {
-				opts = append(opts, packager.WithModule(o))
 			}
 
 			err := packager.Build(tt.pth, out, opts...)

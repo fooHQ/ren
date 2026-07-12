@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/deepnoodle-ai/risor/v2/pkg/ast"
 	"github.com/deepnoodle-ai/risor/v2/pkg/compiler"
 	"github.com/deepnoodle-ai/risor/v2/pkg/object"
 	"github.com/deepnoodle-ai/risor/v2/pkg/parser"
@@ -95,7 +96,8 @@ func walkSourceDir(src string, opts *options) (string, error) {
 		}
 
 		if isRisorScript(srcPth) {
-			err = compileScript(context.Background(), srcPth, dstPth, opts.GlobalNames())
+			rel := strings.TrimPrefix(srcPth, srcPrefix)
+			err = compileScript(context.Background(), srcPth, dstPth, opts.GlobalNames(), !isEntrypointFile(rel))
 		} else {
 			err = copyFile(srcPth, dstPth)
 		}
@@ -156,44 +158,117 @@ func isRisorScript(filename string) bool {
 	return false
 }
 
-func compileScript(ctx context.Context, src, dst string, globalNames []string) error {
+func compileScript(ctx context.Context, src, dst string, globalNames []string, wrap bool) error {
 	b, err := os.ReadFile(src)
 	if err != nil {
 		return err
 	}
 
-	prog, err := parser.Parse(ctx, string(b), &parser.Config{
-		Filename: src,
+	source := string(b)
+	prog, err := parseSource(ctx, src, source)
+	if err != nil {
+		return err
+	}
+
+	code, err := compileProgram(src, source, prog, globalNames)
+	if err != nil {
+		return err
+	}
+
+	// A module is compiled as an immediately-invoked function returning a map of
+	// its top-level names. Wrapping turns those names into locals, so exported
+	// functions become self-contained closures independent of any VM's globals.
+	// It is done on the AST, reusing the original statements, so that compiled
+	// source locations still point at the module's real lines and columns. The
+	// first compile above is what reveals the module's top-level names; the
+	// wrapped program must then be compiled to produce the shipped bytecode.
+	if wrap {
+		names, err := topLevelNames(code, globalNames)
+		if err != nil {
+			return err
+		}
+
+		prog = wrapModule(prog, names)
+		code, err = compileProgram(src, source, prog, globalNames)
+		if err != nil {
+			return err
+		}
+	}
+
+	out, err := code.MarshalJSON()
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(replaceScriptExt(dst), out, 0644)
+}
+
+func parseSource(ctx context.Context, filename, source string) (*ast.Program, error) {
+	return parser.Parse(ctx, source, &parser.Config{
+		Filename: filename,
 		MaxDepth: 0,
 	})
-	if err != nil {
-		return err
-	}
+}
 
+func compileProgram(filename, source string, prog *ast.Program, globalNames []string) (*compiler.Code, error) {
 	comp, err := compiler.New(&compiler.Config{
 		GlobalNames: globalNames,
-		Filename:    src,
-		Source:      string(b),
+		Filename:    filename,
+		Source:      source,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	code, err := comp.CompileAST(prog)
-	if err != nil {
-		return err
+	return comp.CompileAST(prog)
+}
+
+// topLevelNames compiles a module unwrapped and returns the names it declares
+// at the top level, i.e. the globals it introduces beyond the provided names.
+func topLevelNames(code *compiler.Code, globalNames []string) ([]string, error) {
+	provided := make(map[string]struct{}, len(globalNames))
+	for _, name := range globalNames {
+		provided[name] = struct{}{}
 	}
 
-	b, err = code.MarshalJSON()
-	if err != nil {
-		return err
+	var names []string
+	for _, name := range code.GlobalNames() {
+		if _, ok := provided[name]; ok {
+			continue
+		}
+		names = append(names, name)
+	}
+	return names, nil
+}
+
+// wrapModule rewrites a module program into an immediately-invoked function
+// literal that returns a map of the given names. The original statements are
+// reused verbatim so their source positions are preserved.
+func wrapModule(prog *ast.Program, names []string) *ast.Program {
+	items := make([]ast.MapItem, 0, len(names))
+	for _, name := range names {
+		items = append(items, ast.MapItem{
+			Key:   &ast.String{Literal: name, Value: name},
+			Value: &ast.Ident{Name: name},
+		})
 	}
 
-	err = os.WriteFile(replaceScriptExt(dst), b, 0644)
-	if err != nil {
-		return err
+	stmts := make([]ast.Node, 0, len(prog.Stmts)+1)
+	stmts = append(stmts, prog.Stmts...)
+	stmts = append(stmts, &ast.Return{Value: &ast.Map{Items: items}})
+
+	call := &ast.Call{Fun: &ast.Func{Body: &ast.Block{Stmts: stmts}}}
+	return &ast.Program{Stmts: []ast.Node{call}}
+}
+
+func isEntrypointFile(rel string) bool {
+	rel = strings.TrimPrefix(filepath.ToSlash(rel), "/")
+	for _, ext := range exts {
+		if rel == "entrypoint"+ext {
+			return true
+		}
 	}
-	return nil
+	return false
 }
 
 func copyFile(src, dst string) error {
@@ -224,16 +299,12 @@ func replaceScriptExt(filename string) string {
 
 type options struct {
 	builtins []*object.Builtin
-	modules  []*object.Module
 }
 
 func (o *options) GlobalNames() []string {
-	names := make([]string, 0, len(o.modules))
+	names := make([]string, 0, len(o.builtins))
 	for _, builtin := range o.builtins {
 		names = append(names, builtin.Name())
-	}
-	for _, module := range o.modules {
-		names = append(names, module.Name().Value())
 	}
 	return names
 }
@@ -246,14 +317,5 @@ func WithBuiltin(builtin *object.Builtin) Option {
 			return
 		}
 		options.builtins = append(options.builtins, builtin)
-	}
-}
-
-func WithModule(module *object.Module) Option {
-	return func(o *options) {
-		if module == nil {
-			return
-		}
-		o.modules = append(o.modules, module)
 	}
 }
