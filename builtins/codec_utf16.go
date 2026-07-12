@@ -27,6 +27,7 @@ func init() {
 	}
 }
 
+// encodeUTF16 encodes a string as little-endian UTF-16 bytes.
 func encodeUTF16(_ context.Context, obj object.Object) (object.Object, error) {
 	s, err := object.AsString(obj)
 	if err != nil {
@@ -40,6 +41,8 @@ func encodeUTF16(_ context.Context, obj object.Object) (object.Object, error) {
 	return object.NewBytes(buf), nil
 }
 
+// decodeUTF16 decodes little-endian UTF-16 bytes into a string. It does not
+// stop at a NUL terminator.
 func decodeUTF16(_ context.Context, obj object.Object) (object.Object, error) {
 	b, err := object.AsBytes(obj)
 	if err != nil {

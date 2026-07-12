@@ -1,3 +1,5 @@
+// Package modules is the registry of built-in modules that Ren scripts can
+// import via the "builtin://" scheme (for example, import("builtin://os")).
 package modules
 
 import (
@@ -24,6 +26,8 @@ var modules = map[string]*object.Module{
 	"shlex": modshlex.Module(),
 }
 
+// Modules returns a copy of the registry, mapping each built-in module's name
+// to its object.Module.
 func Modules() map[string]*object.Module {
 	result := make(map[string]*object.Module, len(modules))
 	maps.Copy(result, modules)

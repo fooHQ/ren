@@ -1,3 +1,10 @@
+// Package packager builds runnable Ren packages from a source directory.
+//
+// A source directory must contain an entrypoint script (entrypoint.risor or
+// entrypoint.rsr). Build compiles every Risor script to bytecode — wrapping
+// non-entrypoint modules so their exports become self-contained closures — and
+// writes the compiled scripts plus any other files into a zip archive that the
+// ren runtime can execute.
 package packager
 
 import (
@@ -17,13 +24,19 @@ import (
 )
 
 var (
+	// ErrMissingEntrypoint is returned when the source directory has no
+	// entrypoint script.
 	ErrMissingEntrypoint = errors.New("missing entrypoint")
 )
 
+// exts are the recognized Risor script file extensions.
 var exts = []string{".risor", ".rsr"}
 
+// fileExt is the extension of a built package archive.
 const fileExt = "zip"
 
+// NewFilename returns name with the package extension appended, unless it
+// already ends with it.
 func NewFilename(name string) string {
 	if strings.HasSuffix(name, fileExt) {
 		return name
@@ -31,6 +44,9 @@ func NewFilename(name string) string {
 	return name + "." + fileExt
 }
 
+// Build compiles the source directory src into a package archive written to
+// dst. It requires src to contain an entrypoint script and returns
+// ErrMissingEntrypoint otherwise.
 func Build(src, dst string, opt ...Option) error {
 	var opts options
 	for _, o := range opt {
@@ -69,6 +85,9 @@ func Build(src, dst string, opt ...Option) error {
 	return nil
 }
 
+// walkSourceDir copies src into a new temporary directory, compiling Risor
+// scripts to bytecode and copying all other files verbatim. It returns the path
+// to the temporary directory, which the caller is responsible for removing.
 func walkSourceDir(src string, opts *options) (string, error) {
 	tmpDir, err := os.MkdirTemp(".", "ren*")
 	if err != nil {
@@ -117,6 +136,8 @@ func walkSourceDir(src string, opts *options) (string, error) {
 	return tmpDir, err
 }
 
+// createTempZip zips the contents of src into a new temporary archive created
+// in dir and returns the archive's path.
 func createTempZip(src, dir string) (string, error) {
 	f, err := os.CreateTemp(dir, "ren*."+fileExt)
 	if err != nil {
@@ -139,6 +160,8 @@ func createTempZip(src, dir string) (string, error) {
 	return f.Name(), nil
 }
 
+// isEntrypoint reports whether dir contains an entrypoint script, returning
+// ErrMissingEntrypoint if not.
 func isEntrypoint(dir string) error {
 	for _, ext := range exts {
 		info, err := os.Stat(filepath.Join(dir, "entrypoint"+ext))
@@ -152,6 +175,7 @@ func isEntrypoint(dir string) error {
 	return ErrMissingEntrypoint
 }
 
+// isRisorScript reports whether filename has a recognized Risor extension.
 func isRisorScript(filename string) bool {
 	for _, ext := range exts {
 		if strings.HasSuffix(filename, ext) {
@@ -161,6 +185,10 @@ func isRisorScript(filename string) bool {
 	return false
 }
 
+// compileScript parses and compiles the Risor script at src, writing the
+// resulting bytecode to dst with a .json extension. When wrap is true the
+// script is treated as an importable module and wrapped so its top-level names
+// become exports (see wrapModule).
 func compileScript(ctx context.Context, src, dst string, globalNames []string, wrap bool) error {
 	b, err := os.ReadFile(src)
 	if err != nil {
@@ -206,6 +234,7 @@ func compileScript(ctx context.Context, src, dst string, globalNames []string, w
 	return os.WriteFile(replaceScriptExt(dst), out, 0644)
 }
 
+// parseSource parses Risor source into an AST program.
 func parseSource(ctx context.Context, filename, source string) (*ast.Program, error) {
 	return parser.Parse(ctx, source, &parser.Config{
 		Filename: filename,
@@ -213,6 +242,8 @@ func parseSource(ctx context.Context, filename, source string) (*ast.Program, er
 	})
 }
 
+// compileProgram compiles an AST program into bytecode, treating globalNames as
+// pre-declared globals.
 func compileProgram(filename, source string, prog *ast.Program, globalNames []string) (*compiler.Code, error) {
 	comp, err := compiler.New(&compiler.Config{
 		GlobalNames: globalNames,
@@ -264,6 +295,8 @@ func wrapModule(prog *ast.Program, names []string) *ast.Program {
 	return &ast.Program{Stmts: []ast.Node{call}}
 }
 
+// isEntrypointFile reports whether the package-relative path rel names the
+// entrypoint script.
 func isEntrypointFile(rel string) bool {
 	rel = strings.TrimPrefix(filepath.ToSlash(rel), "/")
 	for _, ext := range exts {
@@ -274,6 +307,7 @@ func isEntrypointFile(rel string) bool {
 	return false
 }
 
+// copyFile copies the contents of src to dst.
 func copyFile(src, dst string) error {
 	fileSrc, err := os.Open(src)
 	if err != nil {
@@ -295,6 +329,8 @@ func copyFile(src, dst string) error {
 	return err
 }
 
+// replaceScriptExt replaces filename's extension with .json, the extension used
+// for compiled scripts inside a package.
 func replaceScriptExt(filename string) string {
 	name := strings.TrimSuffix(filename, filepath.Ext(filename))
 	return name + ".json"
@@ -304,6 +340,8 @@ type options struct {
 	builtins []*object.Builtin
 }
 
+// GlobalNames returns the names of the configured builtins, which are treated
+// as pre-declared globals during compilation.
 func (o *options) GlobalNames() []string {
 	names := make([]string, 0, len(o.builtins))
 	for _, builtin := range o.builtins {
@@ -312,8 +350,12 @@ func (o *options) GlobalNames() []string {
 	return names
 }
 
+// Option configures a Build.
 type Option func(*options)
 
+// WithBuiltin registers a builtin whose name is treated as a pre-declared
+// global when compiling scripts, so references to it are not flagged as
+// undefined. A nil builtin is ignored.
 func WithBuiltin(builtin *object.Builtin) Option {
 	return func(options *options) {
 		if builtin == nil {

@@ -1,6 +1,10 @@
 // Portions of this file are adapted from Risor (https://github.com/deepnoodle-ai/risor).
 // Licensed under the Apache License, Version 2.0.
 
+// Package builtins defines the global functions available to every Ren script.
+// It re-exports a curated subset of Risor's built-ins and adds Ren-specific
+// ones such as import, print, printf, and the pack/unpack family. It also
+// registers the "utf16" encode/decode codec on import.
 package builtins
 
 import (
@@ -49,6 +53,9 @@ var builtins = map[string]*object.Builtin{
 	"printf":   object.NewBuiltin("printf", Printf),
 }
 
+// Print writes its arguments to standard output separated by spaces and
+// followed by a newline. Strings and bytes are written verbatim; other values
+// are written via their Inspect representation. It accepts 1 to 64 arguments.
 func Print(ctx context.Context, args ...object.Object) (object.Object, error) {
 	if len(args) < 1 || len(args) > 64 {
 		return nil, object.NewArgsRangeError("print", 1, 64, len(args))
@@ -79,6 +86,9 @@ func Print(ctx context.Context, args ...object.Object) (object.Object, error) {
 	return object.Nil, nil
 }
 
+// Printf formats its trailing arguments according to the first (format-string)
+// argument and writes the result to standard output. It accepts 1 to 64
+// arguments.
 func Printf(ctx context.Context, args ...object.Object) (object.Object, error) {
 	if len(args) < 1 || len(args) > 64 {
 		return nil, object.NewArgsRangeError("printf", 1, 64, len(args))
@@ -99,6 +109,7 @@ func Printf(ctx context.Context, args ...object.Object) (object.Object, error) {
 	return object.Nil, nil
 }
 
+// Builtins returns a copy of the global built-in functions, keyed by name.
 func Builtins() map[string]*object.Builtin {
 	result := make(map[string]*object.Builtin, len(builtins))
 	maps.Copy(result, builtins)

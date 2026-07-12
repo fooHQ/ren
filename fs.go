@@ -416,6 +416,7 @@ func NewPipe() *Pipe {
 	}
 }
 
+// Write writes p to the pipe. A write on a closed pipe reports fs.ErrClosed.
 func (f *Pipe) Write(p []byte) (int, error) {
 	n, err := f.w.Write(p)
 	if errors.Is(err, io.ErrClosedPipe) {
@@ -424,6 +425,7 @@ func (f *Pipe) Write(p []byte) (int, error) {
 	return n, err
 }
 
+// Stat returns placeholder file information for the pipe.
 func (f *Pipe) Stat() (FileInfo, error) {
 	return &pipeInfo{
 		name:    "grr",
@@ -434,6 +436,7 @@ func (f *Pipe) Stat() (FileInfo, error) {
 	}, nil
 }
 
+// Read reads from the pipe into p. A read on a closed pipe reports fs.ErrClosed.
 func (f *Pipe) Read(p []byte) (int, error) {
 	n, err := f.r.Read(p)
 	if errors.Is(err, io.ErrClosedPipe) {
@@ -442,6 +445,7 @@ func (f *Pipe) Read(p []byte) (int, error) {
 	return n, err
 }
 
+// Close closes both ends of the pipe.
 func (f *Pipe) Close() error {
 	wErr := f.w.Close()
 	rErr := f.r.Close()

@@ -9,6 +9,9 @@ import (
 	"github.com/deepnoodle-ai/risor/v2/pkg/object"
 )
 
+// Pack serializes a map of values into a little-endian byte buffer according to
+// a schema. It takes two arguments: the schema (a list of field descriptors)
+// and the data map. See parseSchema for the schema format.
 func Pack(ctx context.Context, args ...object.Object) (object.Object, error) {
 	if len(args) != 2 {
 		return nil, object.NewArgsError("pack", 2, len(args))
@@ -45,6 +48,8 @@ func Pack(ctx context.Context, args ...object.Object) (object.Object, error) {
 	return object.NewBytes(buf), nil
 }
 
+// Packsize returns the total byte size of a schema without packing any data. It
+// takes a single schema argument.
 func Packsize(ctx context.Context, args ...object.Object) (object.Object, error) {
 	if len(args) != 1 {
 		return nil, object.NewArgsError("packsize", 1, len(args))
@@ -68,6 +73,9 @@ func Packsize(ctx context.Context, args ...object.Object) (object.Object, error)
 	return object.NewInt(int64(total)), nil
 }
 
+// Unpack deserializes a little-endian byte buffer into a map according to a
+// schema, the inverse of Pack. It takes two arguments: the schema and the byte
+// buffer. Fields named "_" are decoded but omitted from the result.
 func Unpack(ctx context.Context, args ...object.Object) (object.Object, error) {
 	if len(args) != 2 {
 		return nil, object.NewArgsError("unpack", 2, len(args))
@@ -87,6 +95,8 @@ func Unpack(ctx context.Context, args ...object.Object) (object.Object, error) {
 	return object.NewMap(m), nil
 }
 
+// field is a single parsed schema entry: a named scalar or nested struct,
+// optionally repeated count times.
 type field struct {
 	name   string
 	typ    string       // scalar type name, e.g. "int32", "uint16", "float64"
@@ -94,6 +104,9 @@ type field struct {
 	count  int          // number of elements; 1 if omitted
 }
 
+// parseSchema converts a schema list into fields. Each entry is a list of
+// [name, type, count?] where type is a scalar type name or a nested schema
+// list, and the optional count gives the number of repeated elements.
 func parseSchema(schema *object.List) ([]field, error) {
 	items := schema.Value()
 	fields := make([]field, 0, len(items))
@@ -138,6 +151,7 @@ func parseSchema(schema *object.List) ([]field, error) {
 	return fields, nil
 }
 
+// scalarSize returns the byte size of a scalar type, or 0 if unknown.
 func scalarSize(typ string) int {
 	switch typ {
 	case "int8", "uint8":
@@ -152,6 +166,8 @@ func scalarSize(typ string) int {
 	return 0
 }
 
+// fieldSize returns the total byte size of a field, recursing into nested
+// schemas and accounting for the element count.
 func fieldSize(f field) (int, error) {
 	if f.nested != nil {
 		fields, err := parseSchema(f.nested)
@@ -171,6 +187,8 @@ func fieldSize(f field) (int, error) {
 	return scalarSize(f.typ) * f.count, nil
 }
 
+// unpackStruct decodes the fields of a schema starting at offset, returning the
+// resulting map and the offset just past the decoded bytes.
 func unpackStruct(schema *object.List, buf []byte, offset int) (map[string]object.Object, int, error) {
 	fields, err := parseSchema(schema)
 	if err != nil {
@@ -190,6 +208,7 @@ func unpackStruct(schema *object.List, buf []byte, offset int) (map[string]objec
 	return result, offset, nil
 }
 
+// unpackField decodes a single field, returning its value and byte size.
 func unpackField(f field, buf []byte, offset int) (object.Object, int, error) {
 	if f.nested != nil {
 		return unpackNested(f, buf, offset)
@@ -197,6 +216,8 @@ func unpackField(f field, buf []byte, offset int) (object.Object, int, error) {
 	return unpackScalar(f, buf, offset)
 }
 
+// unpackNested decodes a nested-struct field, yielding a map for a single
+// element or a list of maps when repeated.
 func unpackNested(f field, buf []byte, offset int) (object.Object, int, error) {
 	if f.count == 1 {
 		m, end, err := unpackStruct(f.nested, buf, offset)
@@ -220,6 +241,8 @@ func unpackNested(f field, buf []byte, offset int) (object.Object, int, error) {
 	return object.NewList(items), totalSize, nil
 }
 
+// unpackScalar decodes a scalar field, yielding a single value, a list of
+// values, or (for 8-bit integer arrays) a bytes value.
 func unpackScalar(f field, buf []byte, offset int) (object.Object, int, error) {
 	elemSize := scalarSize(f.typ)
 	totalSize := elemSize * f.count
@@ -275,6 +298,7 @@ func unpackScalar(f field, buf []byte, offset int) (object.Object, int, error) {
 	return object.NewList(items), totalSize, nil
 }
 
+// readInt reads a little-endian integer of the given type from data.
 func readInt(typ string, data []byte) (int64, error) {
 	switch typ {
 	case "int8":
@@ -295,6 +319,7 @@ func readInt(typ string, data []byte) (int64, error) {
 	return 0, fmt.Errorf("unpack: unknown type %q", typ)
 }
 
+// readFloat reads a little-endian float of the given type from data.
 func readFloat(typ string, data []byte) (float64, error) {
 	switch typ {
 	case "float32":
@@ -305,6 +330,7 @@ func readFloat(typ string, data []byte) (float64, error) {
 	return 0, fmt.Errorf("unpack: unknown type %q", typ)
 }
 
+// packField encodes a single field from m into buf, returning its byte size.
 func packField(f field, m *object.Map, buf []byte, offset int) (int, error) {
 	if f.nested != nil {
 		return packNested(f, m, buf, offset)
@@ -312,6 +338,8 @@ func packField(f field, m *object.Map, buf []byte, offset int) (int, error) {
 	return packScalar(f, m, buf, offset)
 }
 
+// packNested encodes a nested-struct field, reading a map for a single element
+// or a list of maps when repeated.
 func packNested(f field, m *object.Map, buf []byte, offset int) (int, error) {
 	val := m.GetWithDefault(f.name, object.Nil)
 
@@ -343,6 +371,8 @@ func packNested(f field, m *object.Map, buf []byte, offset int) (int, error) {
 	return totalSize, nil
 }
 
+// packStruct encodes all fields of a schema from m into buf, returning the
+// number of bytes written.
 func packStruct(schema *object.List, m *object.Map, buf []byte, offset int) (int, error) {
 	fields, err := parseSchema(schema)
 	if err != nil {
@@ -359,6 +389,9 @@ func packStruct(schema *object.List, m *object.Map, buf []byte, offset int) (int
 	return offset - start, nil
 }
 
+// packScalar encodes a scalar field from m into buf. Fields named "_" are
+// skipped, leaving zero padding. Repeated 8-bit integers are read from a bytes
+// value; other repeated scalars are read from a list.
 func packScalar(f field, m *object.Map, buf []byte, offset int) (int, error) {
 	elemSize := scalarSize(f.typ)
 	totalSize := elemSize * f.count
@@ -425,6 +458,7 @@ func packScalar(f field, m *object.Map, buf []byte, offset int) (int, error) {
 	return totalSize, nil
 }
 
+// writeInt writes v as a little-endian integer of the given type into buf.
 func writeInt(typ string, buf []byte, v int64) {
 	switch typ {
 	case "int8", "uint8":
@@ -438,6 +472,7 @@ func writeInt(typ string, buf []byte, v int64) {
 	}
 }
 
+// writeFloat writes v as a little-endian float of the given type into buf.
 func writeFloat(typ string, buf []byte, v float64) {
 	switch typ {
 	case "float32":

@@ -1,6 +1,9 @@
 // Portions of this file are adapted from Risor (https://github.com/deepnoodle-ai/risor).
 // Licensed under the Apache License, Version 2.0.
 
+// Package fs implements the Ren "fs" module, exposing filesystem operations to
+// scripts. Every operation is dispatched through the OS abstraction on the
+// context, so paths may target any registered scheme-based filesystem.
 package fs
 
 import (
@@ -16,6 +19,9 @@ import (
 	"github.com/foohq/ren/objects"
 )
 
+// OpenFile opens the named file and returns it as a file object. It takes three
+// arguments: the path, a mode string (such as "r", "w", or "a+"), and a
+// permission bitmask. See modeToFlags for the supported mode strings.
 func OpenFile(ctx context.Context, args ...object.Object) (object.Object, error) {
 	if len(args) != 3 {
 		return nil, object.NewArgsError("os.open_file", 3, len(args))
@@ -43,6 +49,8 @@ func OpenFile(ctx context.Context, args ...object.Object) (object.Object, error)
 	return objects.NewFile(ctx, f, path), nil
 }
 
+// ReadFile reads the named file and returns its contents as bytes. It takes a
+// single path argument.
 func ReadFile(ctx context.Context, args ...object.Object) (object.Object, error) {
 	if len(args) != 1 {
 		return nil, object.NewArgsError("os.read_file", 1, len(args))
@@ -58,6 +66,8 @@ func ReadFile(ctx context.Context, args ...object.Object) (object.Object, error)
 	return object.NewBytes(bytes), nil
 }
 
+// ReadDir lists the named directory and returns its entries as a list of
+// dir_entry objects. It takes a single path argument.
 func ReadDir(ctx context.Context, args ...object.Object) (object.Object, error) {
 	if len(args) != 1 {
 		return nil, object.NewArgsError("os.read_dir", 1, len(args))
@@ -77,6 +87,9 @@ func ReadDir(ctx context.Context, args ...object.Object) (object.Object, error) 
 	return object.NewList(items), nil
 }
 
+// WriteFile writes data to the named file, creating it as needed. It takes
+// three arguments: the path, the data (bytes or string), and a permission
+// bitmask.
 func WriteFile(ctx context.Context, args ...object.Object) (object.Object, error) {
 	if len(args) != 3 {
 		return nil, object.NewArgsError("os.write_file", 3, len(args))
@@ -104,6 +117,8 @@ func WriteFile(ctx context.Context, args ...object.Object) (object.Object, error
 	return object.Nil, nil
 }
 
+// Remove deletes the named file or empty directory. It takes a single path
+// argument.
 func Remove(ctx context.Context, args ...object.Object) (object.Object, error) {
 	if len(args) != 1 {
 		return nil, object.NewArgsError("os.remove", 1, len(args))
@@ -118,6 +133,8 @@ func Remove(ctx context.Context, args ...object.Object) (object.Object, error) {
 	return object.Nil, nil
 }
 
+// RemoveAll deletes the named path and any children it contains. It takes a
+// single path argument.
 func RemoveAll(ctx context.Context, args ...object.Object) (object.Object, error) {
 	if len(args) != 1 {
 		return nil, object.NewArgsError("os.remove_all", 1, len(args))
@@ -132,6 +149,8 @@ func RemoveAll(ctx context.Context, args ...object.Object) (object.Object, error
 	return object.Nil, nil
 }
 
+// Rename moves a file or directory from oldpath to newpath. It takes two path
+// arguments and cannot move across filesystem boundaries.
 func Rename(ctx context.Context, args ...object.Object) (object.Object, error) {
 	if len(args) != 2 {
 		return nil, object.NewArgsError("os.rename", 2, len(args))
@@ -150,6 +169,8 @@ func Rename(ctx context.Context, args ...object.Object) (object.Object, error) {
 	return object.Nil, nil
 }
 
+// Stat returns a file_info object describing the named file. It takes a single
+// path argument.
 func Stat(ctx context.Context, args ...object.Object) (object.Object, error) {
 	if len(args) != 1 {
 		return nil, object.NewArgsError("os.stat", 1, len(args))
@@ -165,6 +186,8 @@ func Stat(ctx context.Context, args ...object.Object) (object.Object, error) {
 	return objects.NewFileInfo(info), nil
 }
 
+// MkdirAll creates the named directory along with any missing parents. It takes
+// two arguments: the path and a permission bitmask.
 func MkdirAll(ctx context.Context, args ...object.Object) (object.Object, error) {
 	if len(args) != 2 {
 		return nil, object.NewArgsError("os.mkdir_all", 2, len(args))
@@ -183,6 +206,8 @@ func MkdirAll(ctx context.Context, args ...object.Object) (object.Object, error)
 	return object.Nil, nil
 }
 
+// Mkdir creates a single directory. It takes two arguments: the path and a
+// permission bitmask.
 func Mkdir(ctx context.Context, args ...object.Object) (object.Object, error) {
 	if len(args) != 2 {
 		return nil, object.NewArgsError("os.mkdir", 2, len(args))
@@ -201,6 +226,8 @@ func Mkdir(ctx context.Context, args ...object.Object) (object.Object, error) {
 	return object.Nil, nil
 }
 
+// MkdirTemp creates a new temporary directory and returns its path. It takes
+// two arguments: the parent directory and a name pattern.
 func MkdirTemp(ctx context.Context, args ...object.Object) (object.Object, error) {
 	if len(args) != 2 {
 		return nil, object.NewArgsError("os.mkdir_temp", 2, len(args))
@@ -220,6 +247,8 @@ func MkdirTemp(ctx context.Context, args ...object.Object) (object.Object, error
 	return object.NewString(tempDir), nil
 }
 
+// Symlink creates newname as a symbolic link to oldname. It takes two path
+// arguments and cannot link across filesystem boundaries.
 func Symlink(ctx context.Context, args ...object.Object) (object.Object, error) {
 	if len(args) != 2 {
 		return nil, object.NewArgsError("os.symlink", 2, len(args))
@@ -238,6 +267,7 @@ func Symlink(ctx context.Context, args ...object.Object) (object.Object, error) 
 	return object.Nil, nil
 }
 
+// modeToFlags translates a fopen-style mode string into os open flags.
 func modeToFlags(mode string) (int, error) {
 	switch mode {
 	case "r":
@@ -265,6 +295,8 @@ func modeToFlags(mode string) (int, error) {
 	}
 }
 
+// Module returns the "fs" module with all of its functions and error
+// sentinels registered.
 func Module() *object.Module {
 	return object.NewBuiltinsModule("fs", map[string]object.Object{
 		"mkdir":          object.NewBuiltin("mkdir", Mkdir),

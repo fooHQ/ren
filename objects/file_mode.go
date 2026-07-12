@@ -15,44 +15,56 @@ import (
 	"github.com/foohq/ren"
 )
 
+// FILEMODE is the Risor type name of a file mode object.
 const FILEMODE = "file_mode"
 
 var _ object.Object = (*FileMode)(nil)
 
+// FileMode is a Risor object wrapping a ren.FileMode. It carries a file's type
+// and permission bits and can be compared against another file_mode or an int.
 type FileMode struct {
 	value ren.FileMode
 }
 
+// NewFileMode wraps a file mode as a Risor object.
 func NewFileMode(value ren.FileMode) *FileMode {
 	return &FileMode{
 		value: value,
 	}
 }
 
+// Attrs returns the attribute specifications for the file mode's methods.
 func (m *FileMode) Attrs() []object.AttrSpec {
 	return fileModeMethods.Specs()
 }
 
+// Inspect returns a human-readable representation of the file mode.
 func (m *FileMode) Inspect() string {
 	return fmt.Sprintf("file_mode(%s)", m.value)
 }
 
+// Type returns the Risor type name of the file mode.
 func (m *FileMode) Type() object.Type {
 	return FILEMODE
 }
 
+// Interface returns the underlying ren.FileMode.
 func (m *FileMode) Interface() any {
 	return m.value
 }
 
+// String returns the standard textual representation of the file mode.
 func (m *FileMode) String() string {
 	return m.value.String()
 }
 
+// Value returns the underlying ren.FileMode.
 func (m *FileMode) Value() ren.FileMode {
 	return m.value
 }
 
+// Compare orders the file mode against another file_mode or int, returning -1,
+// 0, or 1. It errors for any other type.
 func (m *FileMode) Compare(other object.Object) (int, error) {
 	switch other := other.(type) {
 	case *FileMode:
@@ -74,6 +86,8 @@ func (m *FileMode) Compare(other object.Object) (int, error) {
 	}
 }
 
+// Equals reports whether the file mode equals another file_mode or int of the
+// same value.
 func (m *FileMode) Equals(other object.Object) bool {
 	switch other := other.(type) {
 	case *FileMode:
@@ -88,22 +102,28 @@ func (m *FileMode) Equals(other object.Object) bool {
 	return false
 }
 
+// GetAttr returns the named method of the file mode.
 func (m *FileMode) GetAttr(name string) (object.Object, bool) {
 	return fileModeMethods.GetAttr(m, name)
 }
 
+// SetAttr always returns an error; file_mode attributes are read-only.
 func (m *FileMode) SetAttr(name string, value object.Object) error {
 	return object.TypeErrorf("file_mode has no attribute %q", name)
 }
 
+// IsTruthy reports whether the file mode is non-zero.
 func (m *FileMode) IsTruthy() bool {
 	return m.value != ren.FileMode(0)
 }
 
+// RunOperation always returns an error; file_mode supports no binary operations.
 func (m *FileMode) RunOperation(opType op.BinaryOpType, right object.Object) (object.Object, error) {
 	return nil, object.TypeErrorf("unsupported operation for file_mode: %v", opType)
 }
 
+// MarshalJSON encodes the file mode, including whether it is a directory or
+// regular file, its permission string, and its type.
 func (m *FileMode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		IsDir     bool   `json:"is_dir"`
@@ -118,6 +138,8 @@ func (m *FileMode) MarshalJSON() ([]byte, error) {
 	})
 }
 
+// fileModeTypeString returns a short name for a file mode's type, such as
+// "dir", "regular", "symlink", or "unknown".
 func fileModeTypeString(m ren.FileMode) string {
 	switch {
 	case m.IsDir():
@@ -141,6 +163,8 @@ func fileModeTypeString(m ren.FileMode) string {
 	}
 }
 
+// fileModeMethods holds the methods exposed on file_mode objects (is_dir,
+// is_regular, perm, type).
 var fileModeMethods = object.NewMethodRegistry[*FileMode](FILEMODE)
 
 func init() {

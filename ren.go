@@ -1,6 +1,14 @@
 // Portions of this file are adapted from Risor (https://github.com/deepnoodle-ai/risor).
 // Licensed under the Apache License, Version 2.0.
 
+// Package ren executes compiled Ren script packages.
+//
+// A package is a zip archive containing an entrypoint plus any modules and
+// data files it imports. Run and its helpers load such a package, wire up the
+// execution environment — built-in functions, importable modules, a
+// scheme-based virtual filesystem, and an OS abstraction — and run the
+// entrypoint on the embedded Risor virtual machine. Behaviour is configured
+// through Option values passed to the Run functions.
 package ren
 
 import (

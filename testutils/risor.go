@@ -1,3 +1,5 @@
+// Package testutils provides testify-based mock implementations of the ren
+// interfaces (OS, File, FileInfo, DirEntry, User, Group) for use in tests.
 package testutils
 
 import (
@@ -8,6 +10,8 @@ import (
 	"github.com/foohq/ren"
 )
 
+// MockOS is a testify mock implementing the ren.OS interface. Each method
+// records the call and returns the values configured on the mock.
 type MockOS struct {
 	mock.Mock
 }
@@ -206,6 +210,7 @@ func (m *MockOS) LookupGid(gid string) (ren.Group, error) {
 	return args.Get(0).(ren.Group), args.Error(1)
 }
 
+// MockFile is a testify mock implementing the ren.File interface.
 type MockFile struct {
 	mock.Mock
 }
@@ -230,6 +235,7 @@ func (m *MockFile) Stat() (ren.FileInfo, error) {
 	return args.Get(0).(ren.FileInfo), args.Error(1)
 }
 
+// MockFileInfo is a testify mock implementing the ren.FileInfo interface.
 type MockFileInfo struct {
 	mock.Mock
 }
@@ -264,6 +270,7 @@ func (m *MockFileInfo) Sys() any {
 	return args.Get(0)
 }
 
+// MockDirEntry is a testify mock implementing the ren.DirEntry interface.
 type MockDirEntry struct {
 	mock.Mock
 }
@@ -288,6 +295,8 @@ func (m *MockDirEntry) Info() (ren.FileInfo, error) {
 	return args.Get(0).(ren.FileInfo), args.Error(1)
 }
 
+// MockUser is a static implementation of the ren.User interface backed by
+// fixed field values.
 type MockUser struct {
 	uid      string
 	gid      string
@@ -296,6 +305,7 @@ type MockUser struct {
 	homeDir  string
 }
 
+// NewMockUser returns a MockUser with the given field values.
 func NewMockUser(uid, gid, username, name, homeDir string) *MockUser {
 	return &MockUser{
 		uid:      uid,
@@ -326,11 +336,14 @@ func (u *MockUser) HomeDir() string {
 	return u.homeDir
 }
 
+// MockGroup is a static implementation of the ren.Group interface backed by
+// fixed field values.
 type MockGroup struct {
 	gid  string
 	name string
 }
 
+// NewMockGroup returns a MockGroup with the given field values.
 func NewMockGroup(gid, name string) *MockGroup {
 	return &MockGroup{
 		gid:  gid,
