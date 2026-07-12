@@ -22,6 +22,9 @@
       ],
       "build": [
         "./devbox.sh build"
+      ],
+      "docs": [
+        "./devbox.sh docs"
       ]
     }
   }

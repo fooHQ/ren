@@ -13,4 +13,8 @@ build() {
     go build -o "$OUTPUT" ./cmd/ren
 }
 
+docs() {
+    go generate ./...
+}
+
 eval $@
