@@ -4,21 +4,37 @@ import (
 	"context"
 	"os"
 	"os/signal"
-	"syscall"
 
-	"github.com/foohq/ren/internal/ren"
+	"github.com/urfave/cli/v3"
+
+	"github.com/foohq/ren"
+	"github.com/foohq/ren/cmd/ren/actions"
+	"github.com/foohq/ren/cmd/ren/commands/build"
+	"github.com/foohq/ren/cmd/ren/commands/run"
 )
 
-func run() error {
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer cancel()
-	return ren.New().Run(ctx, os.Args)
+var app = &cli.Command{
+	Name:    "ren",
+	Usage:   "Build, test, run Risor scripts",
+	Version: ren.Version(),
+	Flags:   []cli.Flag{
+		// TODO
+	},
+	Commands: []*cli.Command{
+		build.NewCommand(),
+		run.NewCommand(),
+	},
+	CommandNotFound: actions.CommandNotFound,
+	OnUsageError:    actions.UsageError,
+	HideHelpCommand: true,
 }
 
 func main() {
-	err := run()
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	err := app.Run(ctx, os.Args)
 	if err != nil {
-		// Error logging is done inside each command no need to have a logger in this place.
 		os.Exit(1)
 	}
 }

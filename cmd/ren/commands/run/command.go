@@ -9,7 +9,7 @@ import (
 
 	"github.com/foohq/ren"
 	"github.com/foohq/ren/builtins"
-	"github.com/foohq/ren/internal/ren/actions"
+	"github.com/foohq/ren/cmd/ren/actions"
 	"github.com/foohq/ren/modules"
 )
 
