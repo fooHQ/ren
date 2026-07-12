@@ -31,6 +31,7 @@ var builtins = map[string]*object.Builtin{
 	"filter":   object.NewBuiltin("filter", modbuiltins.Filter),
 	"float":    object.NewBuiltin("float", modbuiltins.Float),
 	"getattr":  object.NewBuiltin("getattr", modbuiltins.GetAttr),
+	"import":   object.NewBuiltin("import", Import),
 	"int":      object.NewBuiltin("int", modbuiltins.Int),
 	"keys":     object.NewBuiltin("keys", modbuiltins.Keys),
 	"len":      object.NewBuiltin("len", modbuiltins.Len),
