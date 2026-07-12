@@ -1,3 +1,5 @@
+const dll = import("builtin://dll")
+
 const user32 = dll.load("user32.dll")
 
 const msg_box = user32.lookup("MessageBoxW")
