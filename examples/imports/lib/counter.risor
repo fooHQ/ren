@@ -1,0 +1,9 @@
+let count = 0
+
+function inc() {
+    count = count + 1
+}
+
+function get() {
+    return count
+}
