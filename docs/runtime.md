@@ -126,14 +126,6 @@ URL-aware path manipulation helpers.
 | `match(pattern, name)` | bool | Report whether a name matches a shell pattern |
 | `split(path)` | list | Split a path into directory and file components |
 
-### `shlex`
-
-Split command-line strings into arguments using shell-style quoting.
-
-| Signature | Returns | Description |
-|---|---|---|
-| `argv(line)` | list | Split a command-line string into a list of arguments following shell-style quoting and escaping |
-
 ### `dll`
 
 Load dynamic-link libraries and call their exported procedures (Windows only).
