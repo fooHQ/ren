@@ -6,7 +6,6 @@ require (
 	github.com/deepnoodle-ai/risor/v2 v2.1.0
 	github.com/foohq/urlpath v0.2.0
 	github.com/stretchr/testify v1.11.1
-	github.com/u-root/u-root v0.16.0
 	github.com/urfave/cli/v3 v3.8.0
 	golang.org/x/sys v0.43.0
 )
