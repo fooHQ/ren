@@ -11,7 +11,6 @@ import (
 	modfilepath "github.com/foohq/ren/modules/filepath"
 	modfs "github.com/foohq/ren/modules/fs"
 	modos "github.com/foohq/ren/modules/os"
-	modshlex "github.com/foohq/ren/modules/shlex"
 )
 
 var modules = map[string]*object.Module{
@@ -22,8 +21,7 @@ var modules = map[string]*object.Module{
 	"fs":       modfs.Module(),
 	//"http":     modhttp.Module(),
 	//"net":      modnet.Module(),
-	"os":    modos.Module(),
-	"shlex": modshlex.Module(),
+	"os": modos.Module(),
 }
 
 // Modules returns a copy of the registry, mapping each built-in module's name
@@ -49,7 +47,6 @@ func Docs() []ModuleDocs {
 		{Name: "os", Doc: modos.ModuleDoc(), Funcs: modos.Docs()},
 		{Name: "fs", Doc: modfs.ModuleDoc(), Funcs: modfs.Docs()},
 		{Name: "filepath", Doc: modfilepath.ModuleDoc(), Funcs: modfilepath.Docs()},
-		{Name: "shlex", Doc: modshlex.ModuleDoc(), Funcs: modshlex.Docs()},
 		{Name: "dll", Doc: moddll.ModuleDoc(), Funcs: moddll.Docs()},
 	}
 }
